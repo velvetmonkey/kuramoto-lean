@@ -172,3 +172,45 @@ theorem hebbian_weight_gradient_identity
   rw [hderiv]
   simp [hebbianWeightF]
   ring
+
+theorem hebbian_phase_gradient_identity
+    (K lam : ℝ) (N : ℕ) (W : Fin N → Fin N → ℝ) (hW : ∀ i j, W i j = W j i)
+    (θ : Fin N → ℝ) (i : Fin N) :
+    weightedKuramotoF K N W i θ =
+      -(deriv (fun x => hebbianL K lam N W (Function.update θ i x)) (θ i)) := by
+  have hV := weighted_gradient_identity K N W hW θ i
+  have hderivL :
+      deriv (fun x => hebbianL K lam N W (Function.update θ i x)) (θ i)
+        = deriv (fun x => weightedKuramotoV K N W (Function.update θ i x)) (θ i) := by
+    simp [hebbianL]
+  rw [hderivL]
+  exact hV
+
+theorem hebbian_joint_lyapunov_descent
+    (K lam : ℝ) (N : ℕ) (W : Fin N → Fin N → ℝ) (hW : ∀ i j, W i j = W j i)
+    (θ : Fin N → ℝ) :
+    (∑ i : Fin N, weightedKuramotoF K N W i θ *
+        deriv (fun x => hebbianL K lam N W (Function.update θ i x)) (θ i))
+      + (∑ i : Fin N, ∑ j : Fin N, hebbianWeightF K lam N W θ i j *
+        deriv (fun x => hebbianL K lam N (hebbianUpdateWeight W i j x) θ) (W i j)) ≤ 0 := by
+  apply add_nonpos
+  · apply Finset.sum_nonpos
+    intro i hi
+    have hgrad := hebbian_phase_gradient_identity K lam N W hW θ i
+    have hderiv :
+        deriv (fun x => hebbianL K lam N W (Function.update θ i x)) (θ i)
+          = -weightedKuramotoF K N W i θ := by
+      linarith
+    rw [hderiv]
+    nlinarith [sq_nonneg (weightedKuramotoF K N W i θ)]
+  · apply Finset.sum_nonpos
+    intro i hi
+    apply Finset.sum_nonpos
+    intro j hj
+    have hgrad := hebbian_weight_gradient_identity K lam N W θ i j
+    have hderiv :
+        deriv (fun x => hebbianL K lam N (hebbianUpdateWeight W i j x) θ) (W i j)
+          = -hebbianWeightF K lam N W θ i j := by
+      linarith
+    rw [hderiv]
+    nlinarith [sq_nonneg (hebbianWeightF K lam N W θ i j)]

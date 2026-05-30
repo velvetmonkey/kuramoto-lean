@@ -1,5 +1,11 @@
 # kuramoto-lean: Lean 4 Formalization of Kuramoto Synchronization
 
+[![Lean 4](https://img.shields.io/badge/Lean-4.31.0--rc1-blue)](https://lean-lang.org/)
+[![Mathlib](https://img.shields.io/badge/Mathlib-971b902-purple)](https://github.com/leanprover-community/mathlib4)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Proofs](https://img.shields.io/badge/proofs-no%20sorry-brightgreen)](Kuramoto)
+[![DOI](https://img.shields.io/badge/DOI-pending-lightgrey)](#cite-this-library)
+
 This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The checked development contains no sorry, no admit, and no new axioms.
 
 ## Background

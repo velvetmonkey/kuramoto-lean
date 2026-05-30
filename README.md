@@ -5,8 +5,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Proofs](https://img.shields.io/badge/proofs-no%20sorry-brightgreen)](Kuramoto)
 [![DOI](https://img.shields.io/badge/DOI-pending-lightgrey)](#cite-this-library)
+[![Companion project](https://img.shields.io/badge/companion-flywheel--universe-d4af37)](https://github.com/velvetmonkey/flywheel-universe)
+[![Live demo](https://img.shields.io/badge/demo-live-d4af37)](https://velvetmonkey.github.io/flywheel-universe/)
 
 This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The checked development contains no sorry, no admit, and no new axioms.
+
+This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project includes a [live browser demo](https://velvetmonkey.github.io/flywheel-universe/) of Hebbian Kuramoto synchronisation across several graph topologies.
 
 ## Background
 
@@ -84,14 +88,27 @@ All proofs were developed using an explicit API verification step: every Mathlib
 
 ## Connections
 
-- This library supports the flywheel-universe research line and the Budgeted Hebbian Kuramoto Max-Cut paper: <https://zenodo.org/records/20303914>.
+- This library supports [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) and the Budgeted Hebbian Kuramoto Max-Cut paper: <https://zenodo.org/records/20303914>.
 - In witness-theory terms, the gradient identities formalise observer-like coherence emerging from local gradient dynamics: local phase and weight updates jointly descend a shared Lyapunov landscape.
+
+## Companion project: flywheel-universe
+
+[flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) is the experimental and conceptual companion to this proof library. It studies budgeted Hebbian Kuramoto dynamics with fixed sparsity support, symmetric weights, and symmetric-Frobenius projection: a constrained control/calibration algorithm for oscillator-based Ising-machine style systems. The original contribution is not a claim to beat classical Max-Cut solvers; it is the identification and testing of a joint phase-plus-weight descent mechanism under physical coupling-budget constraints, especially under amplitude heterogeneity.
+
+This Lean repo makes the central mathematical spine of that project machine-checkable. `Weighted.lean`, `Hebbian.lean`, and `Connections.lean` prove that the weighted and Hebbian systems are negative-gradient/descent systems for explicit potentials, and that the joint phase-plus-weight Hebbian update descends the Lyapunov function algebraically without ODE machinery. In short: flywheel-universe supplies the model, experiments, and demo; this repo supplies the zero-sorry formal proof core.
+
+Useful links:
+
+- Project repo: <https://github.com/velvetmonkey/flywheel-universe>
+- Live demo: <https://velvetmonkey.github.io/flywheel-universe/>
+- Demo source: <https://github.com/velvetmonkey/flywheel-universe/blob/main/demos/hebbian-kuramoto.html>
+- Zenodo paper: <https://zenodo.org/records/20303914>
 
 ## Related work
 
 - `taejun-song/kuramoto-lean`: comprehensive Lean 4 formalisation via the Ott-Antonsen manifold; it studies the continuum-limit approach, while this library focuses on finite-N geometric and Lyapunov identities.
 - `facebookresearch/atlas-lean`: ATLAS autoformalized textbook library; its `FourierAnalysis` module provides AddCircle scaffolding used in early exploration.
-- `velvetmonkey/flywheel-universe`: Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece claim of the companion paper.
+- [`velvetmonkey/flywheel-universe`](https://github.com/velvetmonkey/flywheel-universe): Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece descent claim of the companion paper. See the [live demo](https://velvetmonkey.github.io/flywheel-universe/).
 - Zenodo paper: DOI to be added on publication.
 
 ## Cite this library

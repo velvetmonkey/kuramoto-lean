@@ -12,6 +12,12 @@ This library formally proves finite-N results about the Kuramoto model of couple
 
 This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project includes a [live browser demo](https://velvetmonkey.github.io/flywheel-universe/) of Hebbian Kuramoto synchronisation across several graph topologies.
 
+## Paper
+
+**kuramoto-lean: A Sorry-Free Lean 4 Library for Finite-N Kuramoto Synchronisation Dynamics**  
+Ben Cassie (2026). Zenodo.  
+https://doi.org/10.5281/zenodo.20468619
+
 ## Background
 
 The Kuramoto model describes N coupled oscillators whose phases evolve under mutual interaction. Originally proposed to model biological synchrony, it appears in power grid stability, distributed clocks, neural dynamics, and AI training. The model's key property is that coupling drives phases toward agreement; when coupling strength exceeds a critical threshold, global synchronisation emerges. This library formalises the mathematical foundations of that synchronisation, making the claims machine-checkable rather than proof-sketch-dependent.
@@ -109,11 +115,11 @@ Useful links:
 - `taejun-song/kuramoto-lean`: comprehensive Lean 4 formalisation via the Ott-Antonsen manifold; it studies the continuum-limit approach, while this library focuses on finite-N geometric and Lyapunov identities.
 - `facebookresearch/atlas-lean`: ATLAS autoformalized textbook library; its `FourierAnalysis` module provides AddCircle scaffolding used in early exploration.
 - [`velvetmonkey/flywheel-universe`](https://github.com/velvetmonkey/flywheel-universe): Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece descent claim of the companion paper. See the [live demo](https://velvetmonkey.github.io/flywheel-universe/).
-- Zenodo paper: DOI to be added on publication.
+- Zenodo paper: <https://doi.org/10.5281/zenodo.20468619>
 
 ## Cite this library
 
-A Zenodo DOI will be added here when the library is archived for publication.
+Use the Zenodo record for the paper: <https://doi.org/10.5281/zenodo.20468619>.
 
 ## Build
 

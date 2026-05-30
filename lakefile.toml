@@ -1,0 +1,12 @@
+name = "kuramoto-lean"
+version = "0.1.0"
+defaultTargets = ["Kuramoto"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "971b90233bf92f8f8ac41f236bcac871e13b9f8e"
+
+[[lean_lib]]
+name = "Kuramoto"
+globs = ["Kuramoto.+"]

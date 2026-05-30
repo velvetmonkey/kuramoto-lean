@@ -2,6 +2,18 @@
 
 This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The checked development contains no sorry, no admit, and no new axioms.
 
+## Background
+
+The Kuramoto model describes N coupled oscillators whose phases evolve under mutual interaction. Originally proposed to model biological synchrony, it appears in power grid stability, distributed clocks, neural dynamics, and AI training. The model's key property is that coupling drives phases toward agreement; when coupling strength exceeds a critical threshold, global synchronisation emerges. This library formalises the mathematical foundations of that synchronisation, making the claims machine-checkable rather than proof-sketch-dependent.
+
+## Why formal verification
+
+A Lean 4 proof with zero sorry, zero admit, and zero new axioms is a machine-checked guarantee, not a human-readable argument. Every lemma name is verified to exist in the Mathlib version pinned in `lean-toolchain` before use. This means the theorems here cannot silently depend on incorrect API assumptions or plausible-but-wrong algebraic steps. The discipline is enforced by a `#check`-before-cite rule throughout development.
+
+## Proof discipline
+
+All proofs were developed using an explicit API verification step: every Mathlib lemma name was `#check`ed against the pinned Mathlib commit before appearing in a proof. Names that failed `#check` were reported and not used. This prevents the most common failure mode in AI-assisted Lean development: hallucinated API names that compile locally against a wrong version.
+
 ## Results
 
 - `Kuramoto/OrderParameter.lean`: The Kuramoto order parameter satisfies `‖kuramotoR N θ‖ ≤ 1` for any positive number of oscillators and any phase configuration.
@@ -68,6 +80,17 @@ This library formally proves finite-N results about the Kuramoto model of couple
 
 - This library supports the flywheel-universe research line and the Budgeted Hebbian Kuramoto Max-Cut paper: <https://zenodo.org/records/20303914>.
 - In witness-theory terms, the gradient identities formalise observer-like coherence emerging from local gradient dynamics: local phase and weight updates jointly descend a shared Lyapunov landscape.
+
+## Related work
+
+- `taejun-song/kuramoto-lean`: comprehensive Lean 4 formalisation via the Ott-Antonsen manifold; it studies the continuum-limit approach, while this library focuses on finite-N geometric and Lyapunov identities.
+- `facebookresearch/atlas-lean`: ATLAS autoformalized textbook library; its `FourierAnalysis` module provides AddCircle scaffolding used in early exploration.
+- `velvetmonkey/flywheel-universe`: Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece claim of the companion paper.
+- Zenodo paper: DOI to be added on publication.
+
+## Cite this library
+
+A Zenodo DOI will be added here when the library is archived for publication.
 
 ## Build
 

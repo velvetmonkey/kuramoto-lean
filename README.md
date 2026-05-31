@@ -32,7 +32,7 @@ All proofs were developed using an explicit API verification step: every Mathlib
 
 ## Results
 
-Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`, `Weighted`, `Hebbian`, `Connections`, and `WitnessGeometry`) contain 14 theorems with zero `sorry`, zero `admit`, and no new axioms. `Kuramoto/Frontier.lean` adds 13 frontier theorems: 12 are fully proved, and one (`allToAll_convergence_to_synchrony`) is a documented gap blocked by missing LaSalle/Barbalat-style infrastructure in the Aristotle Mathlib v4.28.0 context. Total coverage is 27 theorem statements, 26 fully proved and one documented gap.
+Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`, `Weighted`, `Hebbian`, `Connections`, and `WitnessGeometry`) contain 14 theorems with zero `sorry`, zero `admit`, and no new axioms. `Kuramoto/Frontier.lean` adds 13 frontier theorems: 12 are fully proved, and one (`allToAll_convergence_to_synchrony`) is a documented gap. The remaining gap is blocked by missing LaSalle/Barbalat-style infrastructure plus a finite-Dini/max lemma for phase-diameter non-expansion; these are not present in the current pinned Mathlib commit. Total coverage is 27 theorem statements, 26 fully proved and one documented gap.
 
 - `Kuramoto/OrderParameter.lean`: The Kuramoto order parameter satisfies `‖kuramotoR N θ‖ ≤ 1` for any positive number of oscillators and any phase configuration.
 
@@ -126,7 +126,7 @@ Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`
   theorem allToAll_convergence_to_synchrony -- documented sorry gap
   ```
 
-  The remaining gap requires LaSalle's invariance principle or Barbalat's lemma to turn algebraic Lyapunov descent into full trajectory convergence. That infrastructure is not currently available in the Mathlib context used by the Aristotle run.
+  The remaining gap requires LaSalle's invariance principle or Barbalat's lemma to turn algebraic Lyapunov descent into full trajectory convergence, plus a finite-Dini/max lemma to turn pointwise extremal-gap contraction into phase-diameter non-expansion. Mathlib currently provides useful `Flow`, `OmegaLimit`, and monotone-convergence building blocks, but not enough to close the theorem locally.
 
 ## Connections
 

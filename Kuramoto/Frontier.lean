@@ -247,8 +247,18 @@ theorem weightedKuramotoV_bounded_below
 /-- Full convergence to synchrony under all-to-all coupling, K > 0, and
     initial phases in an open semicircle.
 
-    NOTE: The full proof requires LaSalle’s invariance principle or Barbalat’s lemma,
-    neither of which is currently available in Mathlib (as of v4.28.0).
+    NOTE: The full proof requires trajectory-level dynamical-systems
+    infrastructure that is not currently available in the pinned Mathlib
+    version used by this repository (Lean v4.31.0-rc1, Mathlib commit
+    971b90233bf92f8f8ac41f236bcac871e13b9f8e).
+
+    The most direct route would use LaSalle's invariance principle or
+    Barbalat's lemma. Mathlib does provide `Mathlib.Dynamics.Flow`,
+    `Mathlib.Dynamics.OmegaLimit`, and monotone-convergence infrastructure,
+    but it does not yet provide the required LaSalle/Barbalat theorem, nor the
+    finite-Dini/max lemma needed to upgrade the pointwise extremal-gap result
+    below into full phase-diameter non-expansion.
+
     The proof strategy would be:
     1. V(θ(t)) is non-increasing and bounded below → V converges.
     2. By Barbalat’s lemma, d/dt V → 0 as t → ∞.

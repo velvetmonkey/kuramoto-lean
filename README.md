@@ -154,6 +154,10 @@ Useful links:
 - [`velvetmonkey/gradient-descent-lean`](https://github.com/velvetmonkey/gradient-descent-lean): companion Lean 4 library formalising gradient descent convergence for smooth convex optimisation -- O(1/k) and geometric rates, 18 theorems, zero sorry. Zenodo: <https://doi.org/10.5281/zenodo.20472996>.
 - Zenodo paper: <https://doi.org/10.5281/zenodo.20468619>
 
+## Acknowledgements
+
+Proofs in this library were generated using [Aristotle](https://aristotle.harmonic.fun), an AI proof assistant for Lean 4 and Mathlib. The proof discipline -- zero sorry, every Mathlib lemma name `#check`ed before use -- was specified by the author and enforced by the Lean type checker.
+
 ## Cite this library
 
 Use the Zenodo record for the paper: <https://doi.org/10.5281/zenodo.20468619>.

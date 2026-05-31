@@ -151,6 +151,7 @@ Useful links:
 - `taejun-song/kuramoto-lean`: comprehensive Lean 4 formalisation via the Ott-Antonsen manifold; it studies the continuum-limit approach, while this library focuses on finite-N geometric and Lyapunov identities.
 - `facebookresearch/atlas-lean`: ATLAS autoformalized textbook library; its `FourierAnalysis` module provides AddCircle scaffolding used in early exploration.
 - [`velvetmonkey/flywheel-universe`](https://github.com/velvetmonkey/flywheel-universe): Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece descent claim of the companion paper. See the [live demo](https://velvetmonkey.github.io/flywheel-universe/).
+- [`velvetmonkey/gradient-descent-lean`](https://github.com/velvetmonkey/gradient-descent-lean): companion Lean 4 library formalising gradient descent convergence for smooth convex optimisation -- O(1/k) and geometric rates, 18 theorems, zero sorry. Zenodo: <https://doi.org/10.5281/zenodo.20472996>.
 - Zenodo paper: <https://doi.org/10.5281/zenodo.20468619>
 
 ## Cite this library

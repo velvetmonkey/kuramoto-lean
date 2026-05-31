@@ -441,6 +441,8 @@ Fourth, phase-diameter monotonicity would require differentiating a maximum or d
 
 Fifth, the companion Hebbian Max-Cut model includes projection onto a constrained coupling set. Formalising projected constrained dynamics would require tangent-cone, normal-cone, variational-inequality, and KKT machinery beyond the current file set.
 
+Sixth, the Hebbian phase-plus-weight descent connects naturally to associative-memory dynamics. Reading the adaptive weights $W$ as a learned coupling makes a synchronised phase configuration an attractor selected by the weight field — the same mechanism that underlies Hopfield associative memory and its statistical-mechanics storage-capacity analysis (Amit, Gutfreund & Sompolinsky, 1985). The modern continuous-state Hopfield network, and its established equivalence to transformer attention (Ramsauer et al., 2021), suggests a route from the present finite-$N$ descent identities toward formal retrieval- and capacity-level guarantees for attention-like dynamics. Formalising the storage-capacity and retrieval-stability side of this picture is a natural, if substantial, extension and is not attempted here.
+
 Finally, the development suggests possible Mathlib contributions: reusable lemmas for coordinate derivatives through `Function.update`, finite-dimensional gradient notation over `Fin N`, and templates for differentiating nested finite sums of trigonometric expressions.
 
 ## 7. Conclusion
@@ -459,3 +461,8 @@ Finally, the development suggests possible Mathlib contributions: reusable lemma
 - Mathlib: <https://github.com/leanprover-community/mathlib4>
 - ATLAS Lean repository: <https://github.com/facebookresearch/atlas-lean>
 - `taejun-song/kuramoto-lean`: <https://github.com/taejun-song/kuramoto-lean>
+
+### Cited works
+
+- Amit, D. J., Gutfreund, H., & Sompolinsky, H. (1985). Spin-glass models of neural networks. *Physical Review A*, 32(2), 1007–1018. <https://doi.org/10.1103/PhysRevA.32.1007>
+- Ramsauer, H., Schäfl, B., Lehner, J., Seidl, P., Widrich, M., Gruber, L., Holzleitner, M., Adler, T., Kreil, D., Kopp, M., Klambauer, G., Brandstetter, J., & Hochreiter, S. (2021). Hopfield Networks is All You Need. *International Conference on Learning Representations (ICLR)*. <https://arxiv.org/abs/2008.02217>

@@ -3,12 +3,12 @@
 [![Lean 4](https://img.shields.io/badge/Lean-4.31.0--rc1-blue)](https://lean-lang.org/)
 [![Mathlib](https://img.shields.io/badge/Mathlib-971b902-purple)](https://github.com/leanprover-community/mathlib4)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Proofs](https://img.shields.io/badge/proofs-no%20sorry-brightgreen)](Kuramoto)
-[![DOI](https://img.shields.io/badge/DOI-pending-lightgrey)](#cite-this-library)
+[![Proofs](https://img.shields.io/badge/proofs-26%20proved%20%2F%201%20gap-yellowgreen)](Kuramoto)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20468619-blue)](https://doi.org/10.5281/zenodo.20468619)
 [![Companion project](https://img.shields.io/badge/companion-flywheel--universe-d4af37)](https://github.com/velvetmonkey/flywheel-universe)
 [![Live demo](https://img.shields.io/badge/demo-live-d4af37)](https://velvetmonkey.github.io/flywheel-universe/)
 
-This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The checked development contains no sorry, no admit, and no new axioms.
+This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The seven core modules contain 14 zero-sorry theorems; the frontier module adds 13 further statements, with 12 fully proved and one documented `sorry` gap for full all-to-all convergence to synchrony.
 
 This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project includes a [live browser demo](https://velvetmonkey.github.io/flywheel-universe/) of Hebbian Kuramoto synchronisation across several graph topologies.
 
@@ -24,13 +24,15 @@ The Kuramoto model describes N coupled oscillators whose phases evolve under mut
 
 ## Why formal verification
 
-A Lean 4 proof with zero sorry, zero admit, and zero new axioms is a machine-checked guarantee, not a human-readable argument. Every lemma name is verified to exist in the Mathlib version pinned in `lean-toolchain` before use. This means the theorems here cannot silently depend on incorrect API assumptions or plausible-but-wrong algebraic steps. The discipline is enforced by a `#check`-before-cite rule throughout development.
+A Lean 4 proof with zero sorry, zero admit, and zero new axioms is a machine-checked guarantee, not a human-readable argument. Every proved theorem in the core library and 12 of the 13 frontier theorems meet that standard. Every lemma name is verified to exist in the Mathlib version pinned in `lean-toolchain` before use, so the proved results cannot silently depend on incorrect API assumptions or plausible-but-wrong algebraic steps. The remaining frontier gap is explicitly documented at `allToAll_convergence_to_synchrony`.
 
 ## Proof discipline
 
 All proofs were developed using an explicit API verification step: every Mathlib lemma name was `#check`ed against the pinned Mathlib commit before appearing in a proof. Names that failed `#check` were reported and not used. This prevents the most common failure mode in AI-assisted Lean development: hallucinated API names that compile locally against a wrong version.
 
 ## Results
+
+Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`, `Weighted`, `Hebbian`, `Connections`, and `WitnessGeometry`) contain 14 theorems with zero `sorry`, zero `admit`, and no new axioms. `Kuramoto/Frontier.lean` adds 13 frontier theorems: 12 are fully proved, and one (`allToAll_convergence_to_synchrony`) is a documented gap blocked by missing LaSalle/Barbalat-style infrastructure in the Aristotle Mathlib v4.28.0 context. Total coverage is 27 theorem statements, 26 fully proved and one documented gap.
 
 - `Kuramoto/OrderParameter.lean`: The Kuramoto order parameter satisfies `‖kuramotoR N θ‖ ≤ 1` for any positive number of oscillators and any phase configuration.
 
@@ -92,6 +94,40 @@ All proofs were developed using an explicit API verification step: every Mathlib
   theorem hebbian_joint_lyapunov_descent
   ```
 
+- `Kuramoto/Connections.lean`: Connects the Hebbian and weighted formulations. It proves that the Hebbian Lyapunov function reduces to the weighted Kuramoto potential when `lam = 0`, and that each Hebbian weight entry has positive second derivative when `lam > 0`.
+
+  ```lean
+  lemma hebbianL_zero_lam_eq_weighted
+
+  lemma hebbianL_convex_weight_entry
+  ```
+
+- `Kuramoto/WitnessGeometry.lean`: A small witness-geometry toy theorem proving that unequal quadratic curvatures give unequal restoring-force magnitudes at equal distance from the minimum.
+
+  ```lean
+  theorem barrier_asymmetry_direct
+  ```
+
+- `Kuramoto/Frontier.lean`: Frontier results generated by Aristotle. It extends the library with ODE existence and uniqueness via Picard-Lindelof, Lyapunov stability along trajectories, semicircle extremal contraction, pointwise phase-diameter non-expansion, synchrony characterisation, and a Lyapunov lower bound. It contains 13 theorem statements: 12 fully proved and one documented gap.
+
+  ```lean
+  theorem kuramotoVectorField_contDiff
+  theorem kuramotoVectorField_locallyLipschitz
+  theorem kuramoto_ode_exists
+  theorem kuramoto_ode_unique
+  theorem lyapunov_derivative_eq
+  theorem lyapunov_derivative_nonpos
+  theorem lyapunov_nonincreasing_along_trajectory
+  theorem semicircle_extremal_contraction
+  lemma sin_nonneg_of_phase_between
+  theorem extremal_gap_derivative_nonpos
+  theorem kuramotoR_norm_eq_one_at_synchrony
+  theorem weightedKuramotoV_bounded_below
+  theorem allToAll_convergence_to_synchrony -- documented sorry gap
+  ```
+
+  The remaining gap requires LaSalle's invariance principle or Barbalat's lemma to turn algebraic Lyapunov descent into full trajectory convergence. That infrastructure is not currently available in the Mathlib context used by the Aristotle run.
+
 ## Connections
 
 - This library supports [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) and the Budgeted Hebbian Kuramoto Max-Cut paper: <https://zenodo.org/records/20303914>.
@@ -101,7 +137,7 @@ All proofs were developed using an explicit API verification step: every Mathlib
 
 [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) is the experimental and conceptual companion to this proof library. It studies budgeted Hebbian Kuramoto dynamics with fixed sparsity support, symmetric weights, and symmetric-Frobenius projection: a constrained control/calibration algorithm for oscillator-based Ising-machine style systems. The original contribution is not a claim to beat classical Max-Cut solvers; it is the identification and testing of a joint phase-plus-weight descent mechanism under physical coupling-budget constraints, especially under amplitude heterogeneity.
 
-This Lean repo makes the central mathematical spine of that project machine-checkable. `Weighted.lean`, `Hebbian.lean`, and `Connections.lean` prove that the weighted and Hebbian systems are negative-gradient/descent systems for explicit potentials, and that the joint phase-plus-weight Hebbian update descends the Lyapunov function algebraically without ODE machinery. In short: flywheel-universe supplies the model, experiments, and demo; this repo supplies the zero-sorry formal proof core.
+This Lean repo makes the central mathematical spine of that project machine-checkable. `Weighted.lean`, `Hebbian.lean`, and `Connections.lean` prove that the weighted and Hebbian systems are negative-gradient/descent systems for explicit potentials, and that the joint phase-plus-weight Hebbian update descends the Lyapunov function algebraically without ODE machinery. `Frontier.lean` pushes beyond the core into ODE existence, Lyapunov trajectory identities, and pointwise phase-diameter contraction, while documenting the remaining full-convergence gap. In short: flywheel-universe supplies the model, experiments, and demo; this repo supplies the formal proof core.
 
 Useful links:
 

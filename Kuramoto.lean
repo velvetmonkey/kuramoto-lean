@@ -6,3 +6,4 @@ import Kuramoto.Weighted
 import Kuramoto.Hebbian
 import Kuramoto.Connections
 import Kuramoto.WitnessGeometry
+import Kuramoto.Frontier

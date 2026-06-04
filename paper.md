@@ -1,4 +1,4 @@
-# kuramoto-lean: A Sorry-Free Lean 4 Library for Finite-N Kuramoto Synchronisation Dynamics
+# kuramoto-lean: A Lean 4 Library for Finite-N Kuramoto Synchronisation Dynamics
 
 Ben Cassie  
 Independent Researcher  
@@ -9,7 +9,7 @@ Published on Zenodo. DOI: 10.5281/zenodo.20468619.
 
 ## Abstract
 
-We present `kuramoto-lean`, a Lean 4 / Mathlib library containing 14 formally verified theorem and lemma statements about finite-$N$ Kuramoto oscillator dynamics. The library takes a finite-dimensional geometric approach on phase configurations, distinct from the Ott--Antonsen manifold and continuum-limit formalism used in complementary Kuramoto formalisation work. All public results in the library are sorry-free, admit-free, and introduce no new axioms. We describe the library contents and the `#check`-before-cite development discipline used to avoid hallucinated API names during AI-assisted Lean development.
+We present `kuramoto-lean`, a Lean 4 / Mathlib library for finite-$N$ Kuramoto oscillator dynamics. The library takes a finite-dimensional geometric approach on phase configurations, distinct from the Ott--Antonsen manifold and continuum-limit formalism used in complementary Kuramoto formalisation work. It contains 26 of 27 theorem statements machine-checked sorry-free, admit-free, and with no new axioms, plus one documented frontier gap at `allToAll_convergence_to_synchrony`. We describe the library contents and the `#check`-before-cite development discipline used to avoid hallucinated API names during AI-assisted Lean development.
 
 ## 1. Introduction
 
@@ -31,7 +31,7 @@ This paper is not a claim of new dynamical-systems theory. The mathematical fact
 
 The library differs in scope from `taejun-song/kuramoto-lean`, which develops Kuramoto stability results through continuum and Ott--Antonsen machinery. In a local inspection of that repository, files such as `ComplexOA.lean`, `ContinuumRigidity.lean`, and `KuramotoFinal.lean` show the continuum/Ott--Antonsen orientation. By contrast, `kuramoto-lean` works directly with finite index types `Fin N`, finite sums, explicit vector fields, and coordinate derivatives. Its main focus is finite-$N$ geometric structure: order-parameter boundedness, gradient identities, pairwise contraction contributions, weighted Lyapunov descent, and Hebbian phase-plus-weight descent.
 
-The library also serves as the formal proof spine for the companion `flywheel-universe` project, which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project supplies the experimental model, browser demo, and benchmark context; this library supplies a sorry-free formalisation of the unprojected algebraic descent core. The companion paper is available at the Zenodo record <https://zenodo.org/records/20303914>. The present library does not formalise the full projected constrained dynamics, projected KKT stationarity, or trajectory-level convergence claims from that project.
+The library also serves as the formal proof spine for the companion `flywheel-universe` project, which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project supplies the experimental model, browser demo, and benchmark context; this library supplies a machine-checked formalisation of the unprojected algebraic descent core, with the remaining frontier convergence gap documented separately. The companion paper is available at the Zenodo record <https://zenodo.org/records/20303914>. The present library does not formalise the full projected constrained dynamics, projected KKT stationarity, or trajectory-level convergence claims from that project.
 
 The remainder of the paper is organised as follows. Section 2 describes the library module by module. Section 3 records the verified artifact and reproducibility information. Section 4 describes the development methodology, especially the `#check`-before-cite discipline. Section 5 situates the library relative to the companion project, witness-theory framing, ATLAS, and related Kuramoto formalisation work. Section 6 states the limitations and future work. Section 7 concludes.
 
@@ -447,7 +447,7 @@ Finally, the development suggests possible Mathlib contributions: reusable lemma
 
 ## 7. Conclusion
 
-`kuramoto-lean` is a sorry-free Lean 4 foundation for finite-$N$ Kuramoto and Hebbian phase-plus-weight dynamics. It formalises order-parameter boundedness, uniform and weighted gradient identities, contraction sign facts, Lyapunov descent identities, Hebbian weight and phase gradient identities, and a small witness-geometry force-asymmetry result. The companion `flywheel-universe` project supplies the experimental and modelling context; this library supplies the proof spine. More broadly, the project demonstrates that AI-assisted Lean development can produce clean, reproducible, sorry-free artifacts rapidly when paired with strict API verification, scoped theorem targets, and honest boundaries around what has and has not been proved.
+`kuramoto-lean` is a Lean 4 foundation for finite-$N$ Kuramoto and Hebbian phase-plus-weight dynamics. It formalises order-parameter boundedness, uniform and weighted gradient identities, contraction sign facts, Lyapunov descent identities, Hebbian weight and phase gradient identities, and a small witness-geometry force-asymmetry result. The companion `flywheel-universe` project supplies the experimental and modelling context; this library supplies the proof spine. More broadly, the project demonstrates that AI-assisted Lean development can produce clean, reproducible artifacts rapidly when paired with strict API verification, scoped theorem targets, and honest boundaries around what has and has not been proved.
 
 ## References and Links
 

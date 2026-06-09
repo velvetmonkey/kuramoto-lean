@@ -538,17 +538,19 @@ private theorem sum_F_sq_tendsto_zero
       by_cases hij : i = j <;> simp +decide [ * ] ) ( θ t ) ) ( by nlinarith ) ;
   exact barbalat_of_nonneg_lipschitz h_f_nonneg (fun s t => hC s t) hC_pos h_F_deriv h_F_bdd
 
-/-- Analysis core: if `sin (D t) → 0` and `D t` is confined to `[0, C]` with
-    `C < π`, then `D t → 0`. The upper `sin` branch near `π` is cut off by
-    `C < π`, so a small `sin (D t)` forces `D t` small (proved via the positive
-    compact minimum of `sin` on `[ε, C]`). -/
+/-- Analysis core: if `sin (D t) → 0` and `D t` is eventually confined to
+    `[0, C]` with `C < π`, then `D t → 0`. The upper `sin` branch near `π` is
+    cut off by `C < π`, so a small `sin (D t)` forces `D t` small (proved via
+    the positive compact minimum of `sin` on `[ε, C]`). -/
 private theorem diam_tendsto_zero_of_sin_tendsto_zero
     {D : ℝ → ℝ} {C : ℝ} (hC : C < Real.pi)
-    (hD0 : ∀ t, 0 ≤ D t) (hDC : ∀ t, D t ≤ C)
+    (hD0 : ∀ᶠ t in Filter.atTop, 0 ≤ D t)
+    (hDC : ∀ᶠ t in Filter.atTop, D t ≤ C)
     (hsin : Filter.Tendsto (fun t => Real.sin (D t)) Filter.atTop (nhds 0)) :
     Filter.Tendsto D Filter.atTop (nhds 0) := by
   rw [Metric.tendsto_atTop]
   intro ε hε
+  obtain ⟨M0, hM0⟩ := Filter.eventually_atTop.1 (hD0.and hDC)
   by_cases hεC : ε ≤ C
   · have hne : (Set.Icc ε C).Nonempty := ⟨ε, ⟨le_refl _, hεC⟩⟩
     obtain ⟨x₀, hx₀mem, hx₀min⟩ :=
@@ -557,29 +559,196 @@ private theorem diam_tendsto_zero_of_sin_tendsto_zero
       Real.sin_pos_of_pos_of_lt_pi (lt_of_lt_of_le hε hx₀mem.1)
         (lt_of_le_of_lt hx₀mem.2 hC)
     obtain ⟨M, hM⟩ := (Metric.tendsto_atTop.1 hsin) (Real.sin x₀) hmpos
-    refine ⟨M, fun t ht => ?_⟩
-    rw [Real.dist_eq, sub_zero, abs_of_nonneg (hD0 t)]
+    refine ⟨max M M0, fun t ht => ?_⟩
+    have htM : M ≤ t := le_trans (le_max_left _ _) ht
+    have htM0 : M0 ≤ t := le_trans (le_max_right _ _) ht
+    obtain ⟨hd0, hdc⟩ := hM0 t htM0
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg hd0]
     by_contra hcon; rw [not_lt] at hcon
-    have hmem : D t ∈ Set.Icc ε C := ⟨hcon, hDC t⟩
+    have hmem : D t ∈ Set.Icc ε C := ⟨hcon, hdc⟩
     have h1 : Real.sin x₀ ≤ Real.sin (D t) := isMinOn_iff.1 hx₀min (D t) hmem
-    have h2 := hM t ht; rw [Real.dist_eq, sub_zero] at h2
+    have h2 := hM t htM; rw [Real.dist_eq, sub_zero] at h2
     have h3 : Real.sin (D t) ≤ |Real.sin (D t)| := le_abs_self _
     linarith
-  · refine ⟨0, fun t _ => ?_⟩
-    rw [Real.dist_eq, sub_zero, abs_of_nonneg (hD0 t)]
-    exact lt_of_le_of_lt (hDC t) (not_le.1 hεC)
+  · refine ⟨M0, fun t ht => ?_⟩
+    obtain ⟨hd0, hdc⟩ := hM0 t ht
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg hd0]
+    exact lt_of_le_of_lt hdc (not_le.1 hεC)
 
-/-- Under the semicircle condition and ∑ F_i² → 0, all phase differences tend to 0. -/
+/-- If `∑ (g t i)² → 0` then `∑ |g t i| → 0` (each coordinate is squeezed to
+    zero by the sum of squares, then the finite sum of absolute values). -/
+private theorem sum_abs_tendsto_zero_of_sum_sq {n : ℕ} {g : ℝ → Fin n → ℝ}
+    (h : Filter.Tendsto (fun t => ∑ i, (g t i) ^ 2) Filter.atTop (nhds 0)) :
+    Filter.Tendsto (fun t => ∑ i, |g t i|) Filter.atTop (nhds 0) := by
+  have hcoord : ∀ i : Fin n, Filter.Tendsto (fun t => |g t i|) Filter.atTop (nhds 0) := by
+    intro i
+    have hsq : Filter.Tendsto (fun t => (g t i) ^ 2) Filter.atTop (nhds 0) :=
+      squeeze_zero (fun t => sq_nonneg _)
+        (fun t => Finset.single_le_sum (fun j _ => sq_nonneg (g t j)) (Finset.mem_univ i)) h
+    have hsqrt : Filter.Tendsto (fun t => Real.sqrt ((g t i) ^ 2)) Filter.atTop
+        (nhds (Real.sqrt 0)) := (Real.continuous_sqrt.tendsto 0).comp hsq
+    simpa [Real.sqrt_sq_eq_abs, Real.sqrt_zero] using hsqrt
+  have := tendsto_finset_sum (Finset.univ : Finset (Fin n)) (fun i _ => hcoord i)
+  simpa using this
+
+/-- For the min-phase index `m` and max-phase index `M` of a configuration,
+    `K · sin (φ_M − φ_m) ≤ F_m`: every off-diagonal sine term is non-negative
+    (phases lie in `[φ_m, φ_M] ⊂ [0,π)`), and the `M`-term contributes exactly
+    `sin (φ_M − φ_m)`. -/
+private theorem weightedF_min_ge_Ksin {n : ℕ} (K : ℝ) (hK : 0 < K)
+    (W : Fin n → Fin n → ℝ) (hWdiag : ∀ i, W i i = 0) (hWoff : ∀ i j, i ≠ j → W i j = 1)
+    (φ : Fin n → ℝ) (m M : Fin n)
+    (hmin : ∀ k, φ m ≤ φ k) (hmax : ∀ k, φ k ≤ φ M)
+    (hC : φ M - φ m < Real.pi) :
+    K * Real.sin (φ M - φ m) ≤ weightedKuramotoF K n W m φ := by
+  unfold weightedKuramotoF
+  have hterm_nonneg : ∀ j, 0 ≤ W m j * Real.sin (φ j - φ m) := by
+    intro j
+    by_cases hjm : j = m
+    · subst hjm; simp [hWdiag]
+    · rw [hWoff m j (Ne.symm hjm), one_mul]
+      exact Real.sin_nonneg_of_nonneg_of_le_pi (by linarith [hmin j]) (by linarith [hmax j])
+  have hWmM : W m M * Real.sin (φ M - φ m) = Real.sin (φ M - φ m) := by
+    by_cases hMm : M = m
+    · subst hMm; simp [hWdiag]
+    · rw [hWoff m M (Ne.symm hMm)]; ring
+  have hle : W m M * Real.sin (φ M - φ m) ≤ ∑ j, W m j * Real.sin (φ j - φ m) :=
+    Finset.single_le_sum (fun j _ => hterm_nonneg j) (Finset.mem_univ M)
+  rw [hWmM] at hle
+  exact mul_le_mul_of_nonneg_left hle (le_of_lt hK)
+
+/-- Uniform semicircle confinement: there is a single `C < π` bounding every
+    pairwise phase difference for all forward time. Exposes the uniform bound
+    `C = (D₀+π)/2` that `semicircle_preserved` constructs internally. -/
+private theorem semicircle_preserved_uniform
+    (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
+    (W : Fin N → Fin N → ℝ) (hWdiag : ∀ i, W i i = 0)
+    (hWoff : ∀ i j, i ≠ j → W i j = 1)
+    (θ : ℝ → Fin N → ℝ)
+    (hsol : ∀ t, HasDerivAt θ (kuramotoVectorField K N W (θ t)) t)
+    (hsemi0 : ∀ a b : Fin N, |θ 0 a - θ 0 b| < Real.pi) :
+    ∃ C : ℝ, C < Real.pi ∧ ∀ s, 0 ≤ s → ∀ a b : Fin N, |θ s a - θ s b| ≤ C := by
+  set D₀ := Finset.sup' (Finset.univ : Finset (Fin N × Fin N))
+    ⟨(⟨0, by omega⟩, ⟨0, by omega⟩), Finset.mem_univ _⟩
+    (fun p : Fin N × Fin N => θ 0 p.1 - θ 0 p.2) with hD₀_def
+  have hD₀_lt_pi : D₀ < Real.pi := by
+    rw [Finset.sup'_lt_iff]
+    exact fun p _ => lt_of_le_of_lt (le_abs_self _) (hsemi0 p.1 p.2)
+  have hD₀_init : ∀ p : Fin N × Fin N, θ 0 p.1 - θ 0 p.2 ≤ D₀ :=
+    fun p => Finset.le_sup' (fun p : Fin N × Fin N => θ 0 p.1 - θ 0 p.2) (Finset.mem_univ p)
+  set C := (D₀ + Real.pi) / 2 with hC_def
+  have hD₀_ge : 0 ≤ D₀ := le_trans (le_of_eq (sub_self (θ 0 ⟨0, by omega⟩)).symm)
+    (hD₀_init (⟨0, by omega⟩, ⟨0, by omega⟩))
+  have hC_lt_pi : C < Real.pi := by simp only [C]; linarith
+  have hC_gt_D₀ : D₀ < C := by simp only [C]; linarith [Real.pi_pos]
+  have h_all : ∀ s, 0 ≤ s → ∀ p : Fin N × Fin N, θ s p.1 - θ s p.2 ≤ C := by
+    haveI : Nonempty (Fin N × Fin N) := ⟨(⟨0, by omega⟩, ⟨0, by omega⟩)⟩
+    exact finite_max_stays_below'
+      (fun p : Fin N × Fin N => fun s => θ s p.1 - θ s p.2) C
+      (fun p => Differentiable.sub
+        (fun s => differentiableAt_pi.1 (hsol s).differentiableAt p.1)
+        (fun s => differentiableAt_pi.1 (hsol s).differentiableAt p.2))
+      (fun p => le_of_lt (lt_of_le_of_lt (hD₀_init p) hC_gt_D₀))
+      (fun s p hs hle heq hmax => by
+        have hab : p.1 ≠ p.2 := by
+          intro h; simp [h] at heq; linarith
+        have hmax_phase : ∀ k, θ s k ≤ θ s p.1 := fun k => by
+          linarith [hle (k, p.2)]
+        have hmin_phase : ∀ k, θ s p.2 ≤ θ s k := fun k => by
+          linarith [hle (p.1, k)]
+        rw [show deriv (fun s => θ s p.1 - θ s p.2) s =
+          weightedKuramotoF K N W p.1 (θ s) - weightedKuramotoF K N W p.2 (θ s) from
+          HasDerivAt.deriv (HasDerivAt.sub (hasDerivAt_pi.1 (hsol s) p.1)
+            (hasDerivAt_pi.1 (hsol s) p.2))]
+        exact allToAll_strict_extremal_contraction K hK N hN W hWdiag hWoff
+          (θ s) p.1 p.2 hab hmax_phase hmin_phase (by linarith) (by linarith))
+  exact ⟨C, hC_lt_pi, fun s hs a b =>
+    abs_le.mpr ⟨by linarith [h_all s hs (b, a)], h_all s hs (a, b)⟩⟩
+
+/-- Under uniform semicircle confinement (`|θ a − θ b| ≤ C < π` for all
+    forward time) and ∑ F_i² → 0, all phase differences tend to 0. The phase
+    diameter `D t` is squeezed: `K·sin(D t) ≤ F_{argmin} ≤ ∑|F_i| → 0`, so
+    `sin(D t) → 0`, hence `D t → 0` (analysis core), hence every pairwise
+    difference → 0. -/
 private theorem phase_diffs_tend_to_zero
     (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
     (W : Fin N → Fin N → ℝ) (hWdiag : ∀ i, W i i = 0)
     (hWoff : ∀ i j, i ≠ j → W i j = 1)
     (θ : ℝ → Fin N → ℝ)
-    (hsemi : ∀ t, 0 ≤ t → ∀ a b : Fin N, |θ t a - θ t b| < Real.pi)
+    (C : ℝ) (hCpi : C < Real.pi)
+    (hdiam : ∀ s, 0 ≤ s → ∀ a b : Fin N, |θ s a - θ s b| ≤ C)
     (hF_zero : Filter.Tendsto (fun t => ∑ i : Fin N, (weightedKuramotoF K N W i (θ t)) ^ 2)
       Filter.atTop (nhds 0)) :
     ∀ a b : Fin N, Filter.Tendsto (fun t => θ t a - θ t b) Filter.atTop (nhds 0) := by
-  sorry
+  have hpairne : (Finset.univ : Finset (Fin N × Fin N)).Nonempty :=
+    ⟨(⟨0, by omega⟩, ⟨0, by omega⟩), Finset.mem_univ _⟩
+  set D : ℝ → ℝ := fun t => (Finset.univ : Finset (Fin N × Fin N)).sup' hpairne
+      (fun p => θ t p.1 - θ t p.2) with hD_def
+  have hD_nonneg : ∀ t, 0 ≤ D t := by
+    intro t
+    have h0 : θ t (⟨0, by omega⟩ : Fin N) - θ t (⟨0, by omega⟩ : Fin N) ≤ D t :=
+      Finset.le_sup' (fun p : Fin N × Fin N => θ t p.1 - θ t p.2)
+        (Finset.mem_univ ((⟨0, by omega⟩ : Fin N), (⟨0, by omega⟩ : Fin N)))
+    simpa using h0
+  have hD_le : ∀ t, 0 ≤ t → D t ≤ C := by
+    intro t ht
+    refine Finset.sup'_le hpairne _ (fun p _ => ?_)
+    exact le_trans (le_abs_self _) (hdiam t ht p.1 p.2)
+  have hsumabs : Filter.Tendsto (fun t => ∑ i, |weightedKuramotoF K N W i (θ t)|)
+      Filter.atTop (nhds 0) := sum_abs_tendsto_zero_of_sum_sq hF_zero
+  have hKsin : Filter.Tendsto (fun t => K * Real.sin (D t)) Filter.atTop (nhds 0) := by
+    refine squeeze_zero' ?_ ?_ hsumabs
+    · filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with t ht
+      have hs0 : 0 ≤ Real.sin (D t) :=
+        Real.sin_nonneg_of_nonneg_of_le_pi (hD_nonneg t)
+          (le_of_lt (lt_of_le_of_lt (hD_le t ht) hCpi))
+      exact mul_nonneg (le_of_lt hK) hs0
+    · filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with t ht
+      obtain ⟨p, -, hp_eq⟩ := Finset.exists_mem_eq_sup' hpairne
+        (fun p : Fin N × Fin N => θ t p.1 - θ t p.2)
+      have hDval : D t = θ t p.1 - θ t p.2 := hp_eq
+      have hmax : ∀ k, θ t k ≤ θ t p.1 := by
+        intro k
+        have hk : θ t k - θ t p.2 ≤ D t :=
+          Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+            (Finset.mem_univ ((k, p.2) : Fin N × Fin N))
+        linarith
+      have hmin : ∀ k, θ t p.2 ≤ θ t k := by
+        intro k
+        have hk : θ t p.1 - θ t k ≤ D t :=
+          Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+            (Finset.mem_univ ((p.1, k) : Fin N × Fin N))
+        linarith
+      have hDpi : θ t p.1 - θ t p.2 < Real.pi := by
+        have := hD_le t ht; linarith
+      have hFm : K * Real.sin (θ t p.1 - θ t p.2) ≤ weightedKuramotoF K N W p.2 (θ t) :=
+        weightedF_min_ge_Ksin K hK W hWdiag hWoff (θ t) p.2 p.1 hmin hmax hDpi
+      have hle_abs : weightedKuramotoF K N W p.2 (θ t)
+          ≤ |weightedKuramotoF K N W p.2 (θ t)| := le_abs_self _
+      have hsum : |weightedKuramotoF K N W p.2 (θ t)|
+          ≤ ∑ i, |weightedKuramotoF K N W i (θ t)| :=
+        Finset.single_le_sum (f := fun i => |weightedKuramotoF K N W i (θ t)|)
+          (fun i _ => abs_nonneg _) (Finset.mem_univ p.2)
+      rw [hDval]; linarith
+  have hsin : Filter.Tendsto (fun t => Real.sin (D t)) Filter.atTop (nhds 0) := by
+    have h := hKsin.const_mul K⁻¹
+    simpa [← mul_assoc, inv_mul_cancel₀ (ne_of_gt hK)] using h
+  have hDtends : Filter.Tendsto D Filter.atTop (nhds 0) :=
+    diam_tendsto_zero_of_sin_tendsto_zero hCpi
+      (Filter.Eventually.of_forall hD_nonneg)
+      ((Filter.eventually_ge_atTop (0 : ℝ)).mono (fun t ht => hD_le t ht))
+      hsin
+  intro a b
+  refine squeeze_zero_norm' ?_ hDtends
+  filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with t ht
+  have h1 : θ t a - θ t b ≤ D t :=
+    Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+      (Finset.mem_univ ((a, b) : Fin N × Fin N))
+  have h2 : θ t b - θ t a ≤ D t :=
+    Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+      (Finset.mem_univ ((b, a) : Fin N × Fin N))
+  rw [Real.norm_eq_abs]
+  exact abs_le.mpr ⟨by linarith, h1⟩
 
 /-
 If all phase differences → 0, then ‖kuramotoR N (θ t)‖ → 1.
@@ -614,10 +783,9 @@ theorem allToAll_convergence_to_synchrony
     intro i j; by_cases hij : i = j
     · subst hij; rfl
     · rw [hWoff i j hij, hWoff j i (Ne.symm hij)]
-  have hsemi_all : ∀ t, 0 ≤ t → ∀ a b : Fin N, |θ t a - θ t b| < Real.pi :=
-    fun t ht a b => semicircle_preserved K hK N hN W hWdiag hWoff θ hsol hsemi t ht a b
+  obtain ⟨C, hCpi, hdiam⟩ := semicircle_preserved_uniform K hK N hN W hWdiag hWoff θ hsol hsemi
   have hF_zero := sum_F_sq_tendsto_zero K hK N hN W hWsym hWdiag hWoff θ hsol
-  have hconv := phase_diffs_tend_to_zero K hK N hN W hWdiag hWoff θ hsemi_all hF_zero
+  have hconv := phase_diffs_tend_to_zero K hK N hN W hWdiag hWoff θ C hCpi hdiam hF_zero
   exact R_norm_of_phase_convergence N hN θ hconv
 
 end

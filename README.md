@@ -4,7 +4,7 @@
 [![Mathlib](https://img.shields.io/badge/Mathlib-971b902-purple)](https://github.com/leanprover-community/mathlib4)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Proofs](https://img.shields.io/badge/proofs-27%20proved%20%2F%200%20sorry-brightgreen)](Kuramoto)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20468619-blue)](https://doi.org/10.5281/zenodo.20468619)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20468618-blue)](https://doi.org/10.5281/zenodo.20468618)
 [![Companion project](https://img.shields.io/badge/companion-flywheel--universe-d4af37)](https://github.com/velvetmonkey/flywheel-universe)
 [![Live demo](https://img.shields.io/badge/demo-live-d4af37)](https://velvetmonkey.github.io/flywheel-universe/)
 
@@ -16,7 +16,21 @@ This repo is the formal proof spine for the companion project [flywheel-universe
 
 **kuramoto-lean: A Lean 4 Library for Finite-N Kuramoto Synchronisation Dynamics**  
 Ben Cassie (2026). Zenodo.  
-https://doi.org/10.5281/zenodo.20468619
+Latest version (all versions): https://doi.org/10.5281/zenodo.20468618  
+v2.0.0 record: https://doi.org/10.5281/zenodo.20617949
+
+## Changelog
+
+### v2.0.0 (2026-06-09)
+
+Closes the library's last open theorem. The library is now **27/27 theorem statements machine-checked sorry-free**, admit-free, with no new axioms (axiom footprint `{propext, Classical.choice, Quot.sound}`).
+
+- `allToAll_convergence_to_synchrony` is now fully proved: from any open-semicircle initial condition (`|θ_a(0) − θ_b(0)| < π`), the order-parameter norm converges to 1 under all-to-all coupling, `K > 0`, `N ≥ 2`.
+- New supporting lemmas: a Lipschitz-form Barbalat lemma (`barbalat_of_nonneg_lipschitz`), uniform semicircle confinement (`semicircle_preserved` / `semicircle_preserved_uniform`), a phase-diameter squeeze (`phase_diffs_tend_to_zero`), and an analysis core (`diam_tendsto_zero_of_sin_tendsto_zero`).
+- Paper updated: new Section 2.8 (`Frontier.lean`) describing the four-part convergence proof; abstract, artifact, and limitations sections corrected.
+- Lean v4.31.0-rc1, Mathlib `971b902`. Builds clean with `lake build`.
+
+In v1 the frontier convergence theorem was a documented `sorry` gap; that gap is now closed.
 
 ## Background
 
@@ -152,7 +166,7 @@ Useful links:
 - `facebookresearch/atlas-lean`: ATLAS autoformalized textbook library; its `FourierAnalysis` module provides AddCircle scaffolding used in early exploration.
 - [`velvetmonkey/flywheel-universe`](https://github.com/velvetmonkey/flywheel-universe): Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece descent claim of the companion paper. See the [live demo](https://velvetmonkey.github.io/flywheel-universe/).
 - [`velvetmonkey/gradient-descent-lean`](https://github.com/velvetmonkey/gradient-descent-lean): companion Lean 4 library formalising gradient descent convergence for smooth convex optimisation -- O(1/k) and geometric rates, 18 theorems, zero sorry. Zenodo: <https://doi.org/10.5281/zenodo.20472996>.
-- Zenodo paper: <https://doi.org/10.5281/zenodo.20468619>
+- Zenodo paper: <https://doi.org/10.5281/zenodo.20468618>
 
 ## Acknowledgements
 
@@ -160,7 +174,7 @@ Proofs in this library were generated using [Aristotle](https://aristotle.harmon
 
 ## Cite this library
 
-Use the Zenodo record for the paper: <https://doi.org/10.5281/zenodo.20468619>.
+Use the Zenodo record for the paper: <https://doi.org/10.5281/zenodo.20468618>.
 
 ## Build
 

@@ -538,6 +538,37 @@ private theorem sum_F_sq_tendsto_zero
       by_cases hij : i = j <;> simp +decide [ * ] ) ( θ t ) ) ( by nlinarith ) ;
   exact barbalat_of_nonneg_lipschitz h_f_nonneg (fun s t => hC s t) hC_pos h_F_deriv h_F_bdd
 
+/-- Analysis core: if `sin (D t) → 0` and `D t` is confined to `[0, C]` with
+    `C < π`, then `D t → 0`. The upper `sin` branch near `π` is cut off by
+    `C < π`, so a small `sin (D t)` forces `D t` small (proved via the positive
+    compact minimum of `sin` on `[ε, C]`). -/
+private theorem diam_tendsto_zero_of_sin_tendsto_zero
+    {D : ℝ → ℝ} {C : ℝ} (hC : C < Real.pi)
+    (hD0 : ∀ t, 0 ≤ D t) (hDC : ∀ t, D t ≤ C)
+    (hsin : Filter.Tendsto (fun t => Real.sin (D t)) Filter.atTop (nhds 0)) :
+    Filter.Tendsto D Filter.atTop (nhds 0) := by
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  by_cases hεC : ε ≤ C
+  · have hne : (Set.Icc ε C).Nonempty := ⟨ε, ⟨le_refl _, hεC⟩⟩
+    obtain ⟨x₀, hx₀mem, hx₀min⟩ :=
+      isCompact_Icc.exists_isMinOn hne Real.continuous_sin.continuousOn
+    have hmpos : 0 < Real.sin x₀ :=
+      Real.sin_pos_of_pos_of_lt_pi (lt_of_lt_of_le hε hx₀mem.1)
+        (lt_of_le_of_lt hx₀mem.2 hC)
+    obtain ⟨M, hM⟩ := (Metric.tendsto_atTop.1 hsin) (Real.sin x₀) hmpos
+    refine ⟨M, fun t ht => ?_⟩
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (hD0 t)]
+    by_contra hcon; rw [not_lt] at hcon
+    have hmem : D t ∈ Set.Icc ε C := ⟨hcon, hDC t⟩
+    have h1 : Real.sin x₀ ≤ Real.sin (D t) := isMinOn_iff.1 hx₀min (D t) hmem
+    have h2 := hM t ht; rw [Real.dist_eq, sub_zero] at h2
+    have h3 : Real.sin (D t) ≤ |Real.sin (D t)| := le_abs_self _
+    linarith
+  · refine ⟨0, fun t _ => ?_⟩
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (hD0 t)]
+    exact lt_of_le_of_lt (hDC t) (not_le.1 hεC)
+
 /-- Under the semicircle condition and ∑ F_i² → 0, all phase differences tend to 0. -/
 private theorem phase_diffs_tend_to_zero
     (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)

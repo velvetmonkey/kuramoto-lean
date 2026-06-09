@@ -372,7 +372,7 @@ private lemma finite_max_stays_below {n : ℕ} (hn : 0 < n)
     have h_deriv_neg : HasDerivAt (g i) (deriv (g i) s) s := by
       exact DifferentiableAt.hasDerivAt ( hg_diff i |> Differentiable.differentiableAt );
     rw [ hasDerivAt_iff_tendsto_slope ] at h_deriv_neg;
-    simpa [ div_eq_inv_mul ] using h_deriv_neg.mono_left ( nhdsWithin_mono _ <| by simp +decide );
+    simpa [ slope_fun_def_field, div_eq_inv_mul ] using h_deriv_neg.mono_left ( nhdsWithin_mono _ <| by simp +decide );
   have := h_deriv_neg.eventually ( gt_mem_nhds ‹_› );
   replace := this.and ( Ioo_mem_nhdsLT hs_pos ) ; obtain ⟨ x, hx₁, hx₂ ⟩ := this.exists; rw [ div_lt_iff_of_neg ] at hx₁ <;> nlinarith [ hi.2 i, show g i x ≤ C from le_of_not_gt fun hx₃ => by linarith [ show s ≤ x from csInf_le ⟨ 0, fun t ht => ht.1 ⟩ ⟨ by linarith, i, hx₃ ⟩ ] ] ;
 

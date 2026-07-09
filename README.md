@@ -194,3 +194,5 @@ lake build
 ## Context
 
 This project is part of the witness-theory research programme connecting gradient descent, synchronisation, and observer dynamics.
+
+Part of the [Lean proof corpus](https://github.com/velvetmonkey/lean), a unified index of machine-checked Lean 4 developments ([live index](https://velvetmonkey.github.io/lean)). See also the companion [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) project and its [live demo](https://velvetmonkey.github.io/flywheel-universe/).

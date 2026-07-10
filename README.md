@@ -12,6 +12,17 @@ This library formally proves finite-N results about the Kuramoto model of couple
 
 This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project includes a [live browser demo](https://velvetmonkey.github.io/flywheel-universe/) of Hebbian Kuramoto synchronisation across several graph topologies.
 
+## Headline results
+
+Two machine-checked convergence-to-synchrony theorems, both `sorry`-free with axiom footprint `{propext, Classical.choice, Quot.sound}`:
+
+- **`floor_coupling_convergence_to_synchrony`** (the general result). For *any* symmetric coupling matrix with a uniform positive off-diagonal floor (`W_ij ≥ w_min > 0` for `i ≠ j`), with `K > 0`, `N ≥ 2`, from any open-semicircle initial configuration (`|θ_a(0) − θ_b(0)| < π`), the order-parameter norm `‖R(θ(t))‖` converges to 1. Not just the complete graph: every uniformly-floored symmetric network.
+- **`allToAll_convergence_to_synchrony`** (the complete-graph case), now also recovered as the `w_min = 1` corollary of the floor theorem (`allToAll_convergence_to_synchrony'`).
+
+Both theorems are **precisely scoped by their hypotheses, and neither is a general Kuramoto synchronisation claim.** Indefinite coupling, coupling without a uniform floor, or initial data outside an open semicircle fall outside what is proved; the library is silent there, by design.
+
+The full library is **29 theorem statements, all machine-checked `sorry`-free, `admit`-free, with no new axioms**: 14 in the algebraic core, 15 on the ODE / convergence frontier.
+
 ## Paper
 
 **kuramoto-lean: A Lean 4 Library for Finite-N Kuramoto Synchronisation Dynamics**  
@@ -20,6 +31,15 @@ Latest version (all versions): https://doi.org/10.5281/zenodo.20468618
 This release (v3): https://doi.org/10.5281/zenodo.21300158
 
 ## Changelog
+
+### v3 (2026-07-10)
+
+Adds the library's most general convergence result and recovers the earlier one as a corollary. Now **29/29 theorem statements** machine-checked `sorry`-free, `admit`-free, with no new axioms (`{propext, Classical.choice, Quot.sound}`).
+
+- `floor_coupling_convergence_to_synchrony`: convergence to synchrony for any symmetric coupling with a uniform positive off-diagonal floor (`W_ij ≥ w_min > 0`, `i ≠ j`), generalising all-to-all coupling. From open-semicircle initial data, `‖R‖ → 1`.
+- `allToAll_convergence_to_synchrony'`: the all-to-all theorem re-derived as the `w_min = 1` special case of the floor result.
+- Supporting frontier lemmas proved directly: `semicircle_preserved_uniform_floor`, `phase_diffs_tend_to_zero_floor`, `floor_strict_extremal_contraction`, `floorF_min_ge_Ksin`.
+- Frontier module now carries **15** fully-proved statements (was 13). Paper updated (Zenodo v3, `10.5281/zenodo.21300158`).
 
 ### v2.0.0 (2026-06-09)
 
@@ -38,7 +58,7 @@ The Kuramoto model describes N coupled oscillators whose phases evolve under mut
 
 ## Why formal verification
 
-A Lean 4 proof with zero sorry, zero admit, and zero new axioms is a machine-checked guarantee, not a human-readable argument. Every theorem in the core library and all 13 frontier theorems meet that standard. Every lemma name is verified to exist in the Mathlib version pinned in `lean-toolchain` before use, so the proved results cannot silently depend on incorrect API assumptions or plausible-but-wrong algebraic steps. As of 2026-06-09 the previously documented gap at `allToAll_convergence_to_synchrony` is closed; the library is fully sorry-free, with axiom footprint `{propext, Classical.choice, Quot.sound}`.
+A Lean 4 proof with zero sorry, zero admit, and zero new axioms is a machine-checked guarantee, not a human-readable argument. Every theorem in the core library and all 15 frontier theorems meet that standard. Every lemma name is verified to exist in the Mathlib version pinned in `lean-toolchain` before use, so the proved results cannot silently depend on incorrect API assumptions or plausible-but-wrong algebraic steps. As of 2026-06-09 the previously documented gap at `allToAll_convergence_to_synchrony` is closed; the library is fully sorry-free, with axiom footprint `{propext, Classical.choice, Quot.sound}`.
 
 ## Proof discipline
 
@@ -46,7 +66,7 @@ All proofs were developed using an explicit API verification step: every Mathlib
 
 ## Results
 
-Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`, `Weighted`, `Hebbian`, `Connections`, and `WitnessGeometry`) contain 14 theorems with zero `sorry`, zero `admit`, and no new axioms. `Kuramoto/Frontier.lean` adds 13 frontier theorems, all fully proved, including `allToAll_convergence_to_synchrony` (closed 2026-06-09). That last theorem was closed without waiting for Mathlib's `Flow`/`OmegaLimit` machinery: a Lipschitz-form Barbalat lemma (`barbalat_of_nonneg_lipschitz`), uniform semicircle confinement (`semicircle_preserved`), and a phase-diameter squeeze (`phase_diffs_tend_to_zero`, via the analysis core `diam_tendsto_zero_of_sin_tendsto_zero`) were proved directly, turning algebraic Lyapunov descent into full trajectory convergence. Total coverage is 27 theorem statements, all fully proved sorry-free, with axiom footprint `{propext, Classical.choice, Quot.sound}`.
+Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`, `Weighted`, `Hebbian`, `Connections`, and `WitnessGeometry`) contain 14 theorems with zero `sorry`, zero `admit`, and no new axioms. `Kuramoto/Frontier.lean` adds 15 frontier theorems, all fully proved, including two convergence-to-synchrony results: `allToAll_convergence_to_synchrony` (all-to-all, closed 2026-06-09) and the more general `floor_coupling_convergence_to_synchrony` (any symmetric coupling with a uniform positive off-diagonal floor, closed 2026-07-10; all-to-all follows as the `w_min = 1` corollary `allToAll_convergence_to_synchrony'`). That last theorem was closed without waiting for Mathlib's `Flow`/`OmegaLimit` machinery: a Lipschitz-form Barbalat lemma (`barbalat_of_nonneg_lipschitz`), uniform semicircle confinement (`semicircle_preserved`), and a phase-diameter squeeze (`phase_diffs_tend_to_zero`, via the analysis core `diam_tendsto_zero_of_sin_tendsto_zero`) were proved directly, turning algebraic Lyapunov descent into full trajectory convergence. Total coverage is 29 theorem statements, all fully proved sorry-free, with axiom footprint `{propext, Classical.choice, Quot.sound}`.
 
 - `Kuramoto/OrderParameter.lean`: The Kuramoto order parameter satisfies `‖kuramotoR N θ‖ ≤ 1` for any positive number of oscillators and any phase configuration.
 
@@ -122,7 +142,7 @@ Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`
   theorem barrier_asymmetry_direct
   ```
 
-- `Kuramoto/Frontier.lean`: Frontier results generated by Aristotle. It extends the library with ODE existence and uniqueness via Picard-Lindelof, Lyapunov stability along trajectories, semicircle extremal contraction, phase-diameter non-expansion, synchrony characterisation, a Lyapunov lower bound, and full all-to-all convergence to synchrony. It contains 13 theorem statements, all fully proved (zero sorry).
+- `Kuramoto/Frontier.lean`: Frontier results generated by Aristotle. It extends the library with ODE existence and uniqueness via Picard-Lindelof, Lyapunov stability along trajectories, semicircle extremal contraction, phase-diameter non-expansion, synchrony characterisation, a Lyapunov lower bound, full all-to-all convergence to synchrony, and the more general floor-coupling convergence to synchrony for any uniformly-floored symmetric network. It contains 15 theorem statements, all fully proved (zero sorry).
 
   ```lean
   theorem kuramotoVectorField_contDiff
@@ -137,10 +157,14 @@ Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`
   theorem extremal_gap_derivative_nonpos
   theorem kuramotoR_norm_eq_one_at_synchrony
   theorem weightedKuramotoV_bounded_below
-  theorem allToAll_convergence_to_synchrony -- fully proved (2026-06-09)
+  theorem allToAll_convergence_to_synchrony      -- fully proved (2026-06-09)
+  theorem floor_coupling_convergence_to_synchrony -- general uniform-floor coupling (2026-07-10)
+  theorem allToAll_convergence_to_synchrony'      -- all-to-all as the w_min = 1 corollary
   ```
 
   `allToAll_convergence_to_synchrony` is now fully proved (closed 2026-06-09). Rather than wait for Mathlib's `Flow`/`OmegaLimit`/invariance-principle infrastructure, the convergence argument was built directly from: a Lipschitz-form Barbalat lemma (`barbalat_of_nonneg_lipschitz`) turning algebraic Lyapunov descent `V' = -∑ Fᵢ²` into `∑ Fᵢ² → 0`; uniform semicircle confinement (`semicircle_preserved`, exposed via `semicircle_preserved_uniform`) giving a single `C < π` bound on the phase diameter for all forward time; and a phase-diameter squeeze (`phase_diffs_tend_to_zero`) that bounds `K·sin(D t) ≤ ∑ |Fᵢ| → 0` and then applies the analysis core `diam_tendsto_zero_of_sin_tendsto_zero` (`sin(D) → 0` with `D ∈ [0, C], C < π` forces `D → 0`). The whole theorem is axiom-clean: `{propext, Classical.choice, Quot.sound}`.
+
+  The floor-coupling generalisation (`floor_coupling_convergence_to_synchrony`) reuses this architecture with a uniform-floor variant of each step (`semicircle_preserved_uniform_floor`, `phase_diffs_tend_to_zero_floor`, `floorF_min_ge_Ksin`, `floor_strict_extremal_contraction`), replacing the all-to-all mean-field bound with the weaker `W_ij ≥ w_min > 0` floor. All-to-all is then recovered as the `w_min = 1` corollary (`allToAll_convergence_to_synchrony'`); the axiom footprint is identical and pinned in-file via `#print axioms`.
 
 ## Connections
 

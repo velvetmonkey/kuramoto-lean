@@ -3,12 +3,12 @@
 [![Lean 4](https://img.shields.io/badge/Lean-4.31.0--rc1-blue)](https://lean-lang.org/)
 [![Mathlib](https://img.shields.io/badge/Mathlib-971b902-purple)](https://github.com/leanprover-community/mathlib4)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Proofs](https://img.shields.io/badge/proofs-27%20proved%20%2F%200%20sorry-brightgreen)](Kuramoto)
+[![Proofs](https://img.shields.io/badge/proofs-29%20proved%20%2F%200%20sorry-brightgreen)](Kuramoto)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20468618-blue)](https://doi.org/10.5281/zenodo.20468618)
 [![Companion project](https://img.shields.io/badge/companion-flywheel--universe-d4af37)](https://github.com/velvetmonkey/flywheel-universe)
 [![Live demo](https://img.shields.io/badge/demo-live-d4af37)](https://velvetmonkey.github.io/flywheel-universe/)
 
-This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The seven core modules contain 14 zero-sorry theorems; the frontier module adds 13 further statements, all fully proved, including full all-to-all convergence to synchrony. The entire library is `sorry`-free.
+This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The seven core modules contain 14 zero-sorry theorems; the frontier module adds 15 further statements, all fully proved, including convergence to synchrony for both all-to-all coupling and, more generally, any symmetric coupling with a uniform positive off-diagonal floor (from open-semicircle initial data). The entire library is `sorry`-free.
 
 This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project includes a [live browser demo](https://velvetmonkey.github.io/flywheel-universe/) of Hebbian Kuramoto synchronisation across several graph topologies.
 

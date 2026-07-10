@@ -9,7 +9,7 @@ Published on Zenodo. DOI: 10.5281/zenodo.20468619.
 
 ## Abstract
 
-We present `kuramoto-lean`, a Lean 4 / Mathlib library for finite-$N$ Kuramoto oscillator dynamics. The library takes a finite-dimensional geometric approach on phase configurations, distinct from the Ott--Antonsen manifold and continuum-limit formalism used in complementary Kuramoto formalisation work. It contains 27 theorem statements, all machine-checked sorry-free, admit-free, and with no new axioms (axiom footprint `{propext, Classical.choice, Quot.sound}`). Fourteen results form the algebraic core (order-parameter boundedness, gradient and Lyapunov-descent identities, contraction sign facts, Hebbian phase-plus-weight descent); thirteen frontier results add ODE existence and uniqueness via Picard--Lindelof, Lyapunov stability along trajectories, and a full all-to-all convergence-to-synchrony theorem proving that from any open-semicircle initial condition the order-parameter norm tends to one. We describe the library contents, the convergence proof architecture, and the `#check`-before-cite development discipline used to avoid hallucinated API names during AI-assisted Lean development.
+We present `kuramoto-lean`, a Lean 4 / Mathlib library for finite-$N$ Kuramoto oscillator dynamics. The library takes a finite-dimensional geometric approach on phase configurations, distinct from the Ott--Antonsen manifold and continuum-limit formalism used in complementary Kuramoto formalisation work. It contains 29 theorem statements, all machine-checked sorry-free, admit-free, and with no new axioms (axiom footprint `{propext, Classical.choice, Quot.sound}`). Fourteen results form the algebraic core (order-parameter boundedness, gradient and Lyapunov-descent identities, contraction sign facts, Hebbian phase-plus-weight descent); fifteen frontier results add ODE existence and uniqueness via Picard--Lindelof, Lyapunov stability along trajectories, and convergence-to-synchrony theorems proving that from any open-semicircle initial condition the order-parameter norm tends to one — first for all-to-all coupling, and then for any symmetric coupling matrix with a uniform positive off-diagonal floor ($W_{ij} \ge w_{\min} > 0$ for $i \ne j$). Both convergence theorems are precisely scoped by these hypotheses; neither is a general Kuramoto synchronisation result. We describe the library contents, the convergence proof architecture, and the `#check`-before-cite development discipline used to avoid hallucinated API names during AI-assisted Lean development.
 
 ## 1. Introduction
 
@@ -37,7 +37,7 @@ The remainder of the paper is organised as follows. Section 2 describes the libr
 
 ## 2. The Library
 
-The repository consists of a root import file, `Kuramoto.lean`, and seven theorem-bearing modules under `Kuramoto/`. The public result set contains 14 theorem or lemma statements. The following catalogue summarises the results without relying on a wide table, so that the rendered PDF remains readable.
+The repository consists of a root import file, `Kuramoto.lean`, and eight theorem-bearing modules under `Kuramoto/`. The algebraic core contributes 14 theorem or lemma statements; the frontier module (Section 2.8) contributes a further 15. The following catalogue summarises the core results without relying on a wide table, so that the rendered PDF remains readable.
 
 - **Order parameter bound** (`kuramotoR_norm_le_one`, `OrderParameter.lean`): for $N>0$, $\|R_N(\theta)\|\le 1$. This is the basic geometric bound for finite phasor averages.
 - **Uniform gradient identity** (`kuramoto_gradient_identity`, `GradientFlow.lean`): $F_i(\theta)=-\partial_i V(\theta)$. This identifies the uniform identical Kuramoto field as a negative gradient flow.
@@ -328,7 +328,7 @@ The proof reduces the absolute values using the signs of the two expressions and
 
 ### 2.8 `Frontier.lean`
 
-The frontier module moves from algebraic identities to trajectory-level dynamics. It contains thirteen theorem statements, all proved sorry-free: smoothness of the Kuramoto vector field, ODE existence and uniqueness via Mathlib's Picard--Lindelof infrastructure, Lyapunov derivative identities and monotonicity along trajectories, semicircle extremal contraction, phase-diameter non-expansion, a synchrony characterisation of the order parameter, a Lyapunov lower bound, and the capstone, full all-to-all convergence to synchrony.
+The frontier module moves from algebraic identities to trajectory-level dynamics. It contains fifteen theorem statements, all proved sorry-free: smoothness of the Kuramoto vector field, ODE existence and uniqueness via Mathlib's Picard--Lindelof infrastructure, Lyapunov derivative identities and monotonicity along trajectories, semicircle extremal contraction, phase-diameter non-expansion, a synchrony characterisation of the order parameter, a Lyapunov lower bound, the capstone all-to-all convergence to synchrony, and its generalisation to symmetric coupling with a uniform positive off-diagonal floor (together with a corollary rederiving the all-to-all theorem from the floor theorem).
 
 The capstone theorem states that for all-to-all coupling ($W_{ij}=1$ for $i\ne j$, zero diagonal), positive coupling $K>0$, $N\ge 2$ oscillators, any trajectory $\theta(t)$ solving the Kuramoto ODE, and any initial configuration confined to an open semicircle ($|\theta_a(0)-\theta_b(0)|<\pi$ for all $a,b$), the order-parameter norm converges to one:
 
@@ -353,7 +353,27 @@ Third, a phase-diameter squeeze (`phase_diffs_tend_to_zero`). Writing $D(t)$ for
 
 Fourth, an analysis core (`diam_tendsto_zero_of_sin_tendsto_zero`). If $\sin(D(t)) \to 0$ and $D(t)$ is eventually confined to $[0,C]$ with $C<\pi$, then $D(t)\to 0$. The upper branch of $\sin$ near $\pi$ is excluded by $C<\pi$, so the positive compact minimum of $\sin$ on $[\varepsilon,C]$ forces $D(t)<\varepsilon$ once $\sin(D(t))$ is small. The diameter therefore vanishes, every pairwise difference is squeezed to zero, and a continuity-of-exponential argument (`R_norm_of_phase_convergence`) lifts this to $\|R\|\to 1$.
 
-The complete theorem depends only on the axioms `{propext, Classical.choice, Quot.sound}`; it uses no `sorry`, no `admit`, no `native_decide`, and no new axioms.
+#### Floor-coupling generalisation
+
+The convergence theorem extends beyond all-to-all coupling. The floor-coupling theorem replaces the hypothesis $W_{ij}=1$ (for $i \ne j$) with a uniform positive off-diagonal floor: a symmetric matrix $W$ and a constant $w_{\min}>0$ with $w_{\min} \le W_{ij}$ for all $i \ne j$.
+
+```lean
+theorem floor_coupling_convergence_to_synchrony
+    (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
+    (W : Fin N → Fin N → ℝ) (hWsym : ∀ i j, W i j = W j i)
+    (w_min : ℝ) (hw : 0 < w_min)
+    (hWfloor : ∀ i j, i ≠ j → w_min ≤ W i j)
+    (θ : ℝ → Fin N → ℝ)
+    (hsol : ∀ t, HasDerivAt θ (kuramotoVectorField K N W (θ t)) t)
+    (hsemi : ∀ a b : Fin N, |θ 0 a - θ 0 b| < Real.pi) :
+    Filter.Tendsto (fun t => ‖kuramotoR N (θ t)‖) Filter.atTop (nhds 1)
+```
+
+The proof reuses the same Lyapunov--Barbalat, uniform-confinement, diameter-squeeze, and analysis-core architecture; the abstract analysis lemmas (the barrier principle, the Barbalat lemma, the diameter analysis core, and the order-parameter step) are shared unchanged with the all-to-all proof. Three ingredients change. The strict extremal contraction is re-proved from the floor, and is in fact simpler than the all-to-all version: a direct term-sign argument shows $F_{\max} \le -K\,w_{\min}\sin(D) < 0 < K\,w_{\min}\sin(D) \le F_{\min}$ whenever the diameter $D$ lies in $(0,\pi)$, with no sine-pairing over the non-extremal indices. The diameter-squeeze bound becomes $K\,w_{\min}\sin(D(t)) \le F_{\mathrm{argmin}}$, so the contraction rate is governed by $w_{\min}$. And the $\le 1$ weight ceiling used by the all-to-all Lipschitz and bounded-below estimates is replaced by a bound derived inside the proof: since the matrix is finite, $B := 1 + \sum_i\sum_j |W_{ij}|$ bounds every entry, so no ceiling hypothesis is required.
+
+Two hypotheses one might expect are absent, deliberately. No nonnegativity assumption is needed, because off-diagonal nonnegativity already follows from the positive floor; and no zero-diagonal assumption is needed, because diagonal entries only ever multiply $\sin(\theta_i-\theta_i)=\sin 0=0$ in the vector field and are inert. A corollary (`allToAll_convergence_to_synchrony'`) rederives the all-to-all theorem from the floor theorem by instantiating $w_{\min}=1$; the original all-to-all theorem is also kept as an independent statement.
+
+Both convergence theorems depend only on the axioms `{propext, Classical.choice, Quot.sound}`; they use no `sorry`, no `admit`, no `native_decide`, and no new axioms. For the floor-coupling theorem this footprint is additionally pinned in the source by a `#guard_msgs`-checked `#print axioms` command at the end of `Frontier.lean`, so the build itself fails if the footprint ever drifts.
 
 ## 3. Verified Artifacts
 
@@ -364,7 +384,7 @@ The repository is available at:
 The artifact reviewed for this paper had commit:
 
 ```text
-2da1ca063229a6ffd3b718193f76bfb9e4fe2cb8
+806ca9a3dcb841383c9517a77013124aa9829183
 ```
 
 The Lean toolchain is pinned to:
@@ -401,7 +421,7 @@ lake build
 rg "sorry|admit|axiom" Kuramoto/
 ```
 
-At the reviewed commit, `lake build` succeeds, and the `rg` command returns no matches. The theorem-bearing Lean modules contain 1486 lines in `Kuramoto/*.lean`. They expose 27 public theorem statements (14 in the algebraic core, 13 in the frontier module), supported by additional private lemmas. A `#print axioms allToAll_convergence_to_synchrony` reports the dependency set `{propext, Classical.choice, Quot.sound}`, confirming no `sorry`, no `admit`, and no new axioms reach the capstone theorem.
+At the reviewed commit, `lake build` succeeds. The `rg` command matches only the two lines of the committed axiom-transcript pin at the end of `Frontier.lean` — the `#print axioms` command and the `#guard_msgs` docstring recording its expected output. These matches are benign by construction: they are the axiom guard itself, not proof code, and the grep otherwise returns no matches across the theorem-bearing modules. Those modules contain 1966 lines in `Kuramoto/*.lean` and expose 29 public theorem statements (14 in the algebraic core, 15 in the frontier module), supported by additional private lemmas. `#print axioms` on `allToAll_convergence_to_synchrony` and on `floor_coupling_convergence_to_synchrony` reports the dependency set `{propext, Classical.choice, Quot.sound}` for each, confirming no `sorry`, no `admit`, and no new axioms reach either convergence theorem; for the floor-coupling theorem this report is also enforced at build time by the committed `#guard_msgs` pin.
 
 ## 4. Development Methodology
 
@@ -413,7 +433,7 @@ A second methodological constraint was scoped target selection. Each proof attem
 
 Version pinning is also essential. Lean and Mathlib APIs evolve quickly, especially around analysis, derivatives, finite sums, and coercions. The pinned `lean-toolchain` and Mathlib revision make the artifact reproducible. A theorem that compiles against this commit has a precise dependency context; a theorem that merely appears plausible in prose does not.
 
-Finally, zero-sorry verification should be interpreted correctly. The absence of `sorry`, `admit`, and new axioms means that the stated Lean theorems are fully checked from the imported foundations. It does not mean that the theorems imply more than they state. The algebraic core proves gradient and Lyapunov-descent identities; the frontier module proves ODE existence and uniqueness, Lyapunov stability along trajectories, and all-to-all convergence to synchrony from open-semicircle initial data. What remains outside the library is broader still: convergence from arbitrary (non-semicircle) initial conditions, synchronisation under general (non-all-to-all) coupling, and the constrained projected dynamics of the companion Max-Cut model. The convergence theorem is precisely scoped by its hypotheses and should be read as exactly that statement, not as a general Kuramoto synchronisation result.
+Finally, zero-sorry verification should be interpreted correctly. The absence of `sorry`, `admit`, and new axioms means that the stated Lean theorems are fully checked from the imported foundations. It does not mean that the theorems imply more than they state. The algebraic core proves gradient and Lyapunov-descent identities; the frontier module proves ODE existence and uniqueness, Lyapunov stability along trajectories, and convergence to synchrony from open-semicircle initial data for all-to-all coupling and, more generally, for symmetric coupling with a uniform positive off-diagonal floor. What remains outside the library is broader still: convergence from arbitrary (non-semicircle) initial conditions, synchronisation under fully general coupling (sign-indefinite weights, or nonnegative weights without a uniform positive floor), and the constrained projected dynamics of the companion Max-Cut model. The convergence theorems are precisely scoped by their hypotheses and should be read as exactly those statements, not as a general Kuramoto synchronisation result.
 
 ## 5. Connections
 
@@ -457,11 +477,11 @@ First, ODE existence and uniqueness for the finite Kuramoto vector field are for
 
 Second, Lyapunov stability along trajectories is proved (`lyapunov_nonincreasing_along_trajectory`), reusing the descent identities as designed.
 
-Third, full synchronisation convergence is proved for the all-to-all system from open-semicircle initial data (`allToAll_convergence_to_synchrony`), via the Lyapunov--Barbalat, uniform-confinement, diameter-squeeze, and analysis-core architecture of Section 2.8. It remains open for general coupling topologies and for initial data outside an open semicircle.
+Third, full synchronisation convergence is proved from open-semicircle initial data, first for the all-to-all system (`allToAll_convergence_to_synchrony`) and then for any symmetric coupling with a uniform positive off-diagonal floor (`floor_coupling_convergence_to_synchrony`), via the Lyapunov--Barbalat, uniform-confinement, diameter-squeeze, and analysis-core architecture of Section 2.8. The earlier open item "synchronisation under general (non-all-to-all) coupling" is therefore partially closed: the floor-coupling case is proved. What remains genuinely open is convergence under fully general coupling — sign-indefinite weights, or nonnegative weights whose off-diagonal entries lack a uniform positive floor (for example, coupling graphs with missing edges) — and convergence from initial data outside an open semicircle.
 
 Fourth, phase-diameter non-expansion is proved (`semicircle_preserved`) through a finite-family maximum-barrier principle (`finite_max_stays_below`) rather than a Dini-derivative lemma, sidestepping the nonsmooth-analysis infrastructure that was unavailable in the local Mathlib context.
 
-Genuinely open directions remain. The companion Hebbian Max-Cut model includes projection onto a constrained coupling set. Formalising projected constrained dynamics would require tangent-cone, normal-cone, variational-inequality, and KKT machinery beyond the current file set.
+Genuinely open directions remain: the fully general (non-floor or sign-indefinite) coupling and non-semicircle initial data just described, and the projected dynamics of the companion model. The companion Hebbian Max-Cut model includes projection onto a constrained coupling set. Formalising projected constrained dynamics would require tangent-cone, normal-cone, variational-inequality, and KKT machinery beyond the current file set.
 
 Separately, the Hebbian phase-plus-weight descent connects naturally to associative-memory dynamics. Reading the adaptive weights $W$ as a learned coupling makes a synchronised phase configuration an attractor selected by the weight field — the same mechanism that underlies Hopfield associative memory and its statistical-mechanics storage-capacity analysis (Amit, Gutfreund & Sompolinsky, 1985). The modern continuous-state Hopfield network, and its established equivalence to transformer attention (Ramsauer et al., 2021), suggests a route from the present finite-$N$ descent identities toward formal retrieval- and capacity-level guarantees for attention-like dynamics. Formalising the storage-capacity and retrieval-stability side of this picture is a natural, if substantial, extension and is not attempted here.
 
@@ -469,7 +489,7 @@ Finally, the development suggests possible Mathlib contributions: reusable lemma
 
 ## 7. Conclusion
 
-`kuramoto-lean` is a Lean 4 foundation for finite-$N$ Kuramoto and Hebbian phase-plus-weight dynamics. It formalises order-parameter boundedness, uniform and weighted gradient identities, contraction sign facts, Lyapunov descent identities, Hebbian weight and phase gradient identities, and a small witness-geometry force-asymmetry result. On top of this algebraic core, a frontier layer proves ODE existence and uniqueness, Lyapunov stability along trajectories, phase-diameter non-expansion, and a full all-to-all convergence-to-synchrony theorem: from any open-semicircle initial condition the order-parameter norm tends to one. The entire library of 27 theorems is machine-checked sorry-free with axiom footprint `{propext, Classical.choice, Quot.sound}`. The companion `flywheel-universe` project supplies the experimental and modelling context; this library supplies the proof spine. More broadly, the project demonstrates that AI-assisted Lean development can produce clean, reproducible artifacts rapidly when paired with strict API verification, scoped theorem targets, and honest boundaries around what has and has not been proved.
+`kuramoto-lean` is a Lean 4 foundation for finite-$N$ Kuramoto and Hebbian phase-plus-weight dynamics. It formalises order-parameter boundedness, uniform and weighted gradient identities, contraction sign facts, Lyapunov descent identities, Hebbian weight and phase gradient identities, and a small witness-geometry force-asymmetry result. On top of this algebraic core, a frontier layer proves ODE existence and uniqueness, Lyapunov stability along trajectories, phase-diameter non-expansion, and convergence-to-synchrony theorems: from any open-semicircle initial condition the order-parameter norm tends to one, for all-to-all coupling and, via the floor-coupling generalisation, for any symmetric coupling matrix with a uniform positive off-diagonal floor. The entire library of 29 theorems is machine-checked sorry-free with axiom footprint `{propext, Classical.choice, Quot.sound}`. The companion `flywheel-universe` project supplies the experimental and modelling context; this library supplies the proof spine. More broadly, the project demonstrates that AI-assisted Lean development can produce clean, reproducible artifacts rapidly when paired with strict API verification, scoped theorem targets, and honest boundaries around what has and has not been proved.
 
 ## References and Links
 

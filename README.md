@@ -17,7 +17,7 @@ This repo is the formal proof spine for the companion project [flywheel-universe
 **kuramoto-lean: A Lean 4 Library for Finite-N Kuramoto Synchronisation Dynamics**  
 Ben Cassie (2026). Zenodo.  
 Latest version (all versions): https://doi.org/10.5281/zenodo.20468618  
-v2.0.0 record: https://doi.org/10.5281/zenodo.20617949
+This release (v3): https://doi.org/10.5281/zenodo.21300158
 
 ## Changelog
 

@@ -788,4 +788,483 @@ theorem allToAll_convergence_to_synchrony
   have hconv := phase_diffs_tend_to_zero K hK N hN W hWdiag hWoff θ C hCpi hdiam hF_zero
   exact R_norm_of_phase_convergence N hN θ hconv
 
+
+/-! ### Floor-coupling convergence
+
+Generalization of `allToAll_convergence_to_synchrony` to symmetric coupling
+matrices with a uniform positive off-diagonal floor: `w_min ≤ W i j` for
+`i ≠ j` with `0 < w_min`. Off-diagonal nonnegativity follows from the floor,
+and diagonal entries are inert (they multiply `sin 0 = 0` in the field), so
+symmetry plus the floor are the only coupling hypotheses needed. -/
+
+/-- Under a positive off-diagonal floor, the extremal velocity difference is
+strictly negative when the phase diameter is in `(0, π)`:
+`F a ≤ K·w_min·sin(θ b − θ a) < 0 < K·w_min·sin(θ a − θ b) ≤ F b`. -/
+private lemma floor_strict_extremal_contraction
+    (K : ℝ) (hK : 0 < K) (N : ℕ)
+    (W : Fin N → Fin N → ℝ)
+    (w_min : ℝ) (hw : 0 < w_min)
+    (hWfloor : ∀ i j, i ≠ j → w_min ≤ W i j)
+    (θ : Fin N → ℝ) (a b : Fin N) (hab : a ≠ b)
+    (hmax : ∀ k, θ k ≤ θ a)
+    (hmin : ∀ k, θ b ≤ θ k)
+    (hgap_pos : 0 < θ a - θ b) (hgap_pi : θ a - θ b < Real.pi) :
+    weightedKuramotoF K N W a θ - weightedKuramotoF K N W b θ < 0 := by
+  have hsin_pos : 0 < Real.sin (θ a - θ b) :=
+    Real.sin_pos_of_pos_of_lt_pi hgap_pos hgap_pi
+  have hsin_ba : Real.sin (θ b - θ a) = -Real.sin (θ a - θ b) := by
+    rw [show θ b - θ a = -(θ a - θ b) by ring, Real.sin_neg]
+  have hsin_ba_neg : Real.sin (θ b - θ a) < 0 := by rw [hsin_ba]; linarith
+  -- Upper bound for the max-index velocity: every term is ≤ 0 and the b-term
+  -- is at most w_min · sin (θ b − θ a) < 0.
+  have hFa : weightedKuramotoF K N W a θ ≤ K * (w_min * Real.sin (θ b - θ a)) := by
+    unfold weightedKuramotoF
+    have hsplit : ∑ j, W a j * Real.sin (θ j - θ a)
+        = W a b * Real.sin (θ b - θ a)
+          + ∑ j ∈ Finset.univ.erase b, W a j * Real.sin (θ j - θ a) :=
+      (Finset.add_sum_erase _ _ (Finset.mem_univ b)).symm
+    have hrest : ∑ j ∈ Finset.univ.erase b, W a j * Real.sin (θ j - θ a) ≤ 0 := by
+      refine Finset.sum_nonpos fun j _ => ?_
+      by_cases hja : j = a
+      · subst hja; simp
+      · have hWnn : 0 ≤ W a j := le_trans hw.le (hWfloor a j (Ne.symm hja))
+        have hs : Real.sin (θ j - θ a) ≤ 0 :=
+          Real.sin_nonpos_of_nonpos_of_neg_pi_le
+            (by linarith [hmax j]) (by linarith [hmin j])
+        exact mul_nonpos_of_nonneg_of_nonpos hWnn hs
+    have hWab : W a b * Real.sin (θ b - θ a) ≤ w_min * Real.sin (θ b - θ a) :=
+      mul_le_mul_of_nonpos_right (hWfloor a b hab) hsin_ba_neg.le
+    have hsum : ∑ j, W a j * Real.sin (θ j - θ a) ≤ w_min * Real.sin (θ b - θ a) := by
+      rw [hsplit]; linarith
+    exact mul_le_mul_of_nonneg_left hsum hK.le
+  -- Lower bound for the min-index velocity: every term is ≥ 0 and the a-term
+  -- is at least w_min · sin (θ a − θ b) > 0.
+  have hFb : K * (w_min * Real.sin (θ a - θ b)) ≤ weightedKuramotoF K N W b θ := by
+    unfold weightedKuramotoF
+    have hsplit : ∑ j, W b j * Real.sin (θ j - θ b)
+        = W b a * Real.sin (θ a - θ b)
+          + ∑ j ∈ Finset.univ.erase a, W b j * Real.sin (θ j - θ b) :=
+      (Finset.add_sum_erase _ _ (Finset.mem_univ a)).symm
+    have hrest : 0 ≤ ∑ j ∈ Finset.univ.erase a, W b j * Real.sin (θ j - θ b) := by
+      refine Finset.sum_nonneg fun j _ => ?_
+      by_cases hjb : j = b
+      · subst hjb; simp
+      · have hWnn : 0 ≤ W b j := le_trans hw.le (hWfloor b j (Ne.symm hjb))
+        have hs : 0 ≤ Real.sin (θ j - θ b) :=
+          Real.sin_nonneg_of_nonneg_of_le_pi
+            (by linarith [hmin j]) (by linarith [hmax j])
+        exact mul_nonneg hWnn hs
+    have hWba : w_min * Real.sin (θ a - θ b) ≤ W b a * Real.sin (θ a - θ b) :=
+      mul_le_mul_of_nonneg_right (hWfloor b a (Ne.symm hab)) hsin_pos.le
+    have hsum : w_min * Real.sin (θ a - θ b) ≤ ∑ j, W b j * Real.sin (θ j - θ b) := by
+      rw [hsplit]; linarith
+    exact mul_le_mul_of_nonneg_left hsum hK.le
+  rw [hsin_ba, show K * (w_min * -Real.sin (θ a - θ b))
+      = -(K * (w_min * Real.sin (θ a - θ b))) by ring] at hFa
+  have hpos : 0 < K * (w_min * Real.sin (θ a - θ b)) :=
+    mul_pos hK (mul_pos hw hsin_pos)
+  linarith
+
+/-- Floor analogue of `weightedF_min_ge_Ksin`: for the min-phase index `m` and
+max-phase index `M`, `K · w_min · sin (φ M − φ m) ≤ F m`. Every off-diagonal
+sine term is nonnegative and the `M`-term carries at least the floor weight. -/
+private theorem floorF_min_ge_Ksin {n : ℕ} (K : ℝ) (hK : 0 < K)
+    (W : Fin n → Fin n → ℝ) (w_min : ℝ) (hw : 0 < w_min)
+    (hWfloor : ∀ i j, i ≠ j → w_min ≤ W i j)
+    (φ : Fin n → ℝ) (m M : Fin n)
+    (hmin : ∀ k, φ m ≤ φ k) (hmax : ∀ k, φ k ≤ φ M)
+    (hC : φ M - φ m < Real.pi) :
+    K * w_min * Real.sin (φ M - φ m) ≤ weightedKuramotoF K n W m φ := by
+  unfold weightedKuramotoF
+  have hterm_nonneg : ∀ j, 0 ≤ W m j * Real.sin (φ j - φ m) := by
+    intro j
+    by_cases hjm : j = m
+    · subst hjm; simp
+    · have h1 : 0 ≤ W m j := le_trans hw.le (hWfloor m j (Ne.symm hjm))
+      exact mul_nonneg h1 (Real.sin_nonneg_of_nonneg_of_le_pi
+        (by linarith [hmin j]) (by linarith [hmax j]))
+  have hWmM : w_min * Real.sin (φ M - φ m) ≤ W m M * Real.sin (φ M - φ m) := by
+    by_cases hMm : M = m
+    · subst hMm; simp
+    · exact mul_le_mul_of_nonneg_right (hWfloor m M (Ne.symm hMm))
+        (Real.sin_nonneg_of_nonneg_of_le_pi
+          (by linarith [hmin M]) (by linarith [hmax M]))
+  have hle : W m M * Real.sin (φ M - φ m) ≤ ∑ j, W m j * Real.sin (φ j - φ m) :=
+    Finset.single_le_sum (fun j _ => hterm_nonneg j) (Finset.mem_univ M)
+  rw [mul_assoc]
+  exact mul_le_mul_of_nonneg_left (le_trans hWmM hle) hK.le
+
+/-- `weightedKuramotoV` is bounded below by `-(K/2)·B·N²` whenever every matrix
+entry is bounded by `B` in absolute value (no sign or diagonal hypotheses). -/
+private theorem weightedKuramotoV_bounded_below_abs
+    (K : ℝ) (hK : 0 < K) (N : ℕ)
+    (W : Fin N → Fin N → ℝ) (B : ℝ) (hB0 : 0 ≤ B) (hWB : ∀ i j, |W i j| ≤ B)
+    (θ : Fin N → ℝ) :
+    -(K / 2) * (B * (N : ℝ) ^ 2) ≤ weightedKuramotoV K N W θ := by
+  unfold weightedKuramotoV
+  have hsum : ∑ i, ∑ j, W i j * Real.cos (θ j - θ i) ≤ B * (N : ℝ) ^ 2 := by
+    have hij : ∀ i j : Fin N, W i j * Real.cos (θ j - θ i) ≤ B := by
+      intro i j
+      calc W i j * Real.cos (θ j - θ i)
+          ≤ |W i j * Real.cos (θ j - θ i)| := le_abs_self _
+        _ = |W i j| * |Real.cos (θ j - θ i)| := abs_mul _ _
+        _ ≤ B * 1 := mul_le_mul (hWB i j) (Real.abs_cos_le_one _) (abs_nonneg _) hB0
+        _ = B := mul_one B
+    calc ∑ i, ∑ j, W i j * Real.cos (θ j - θ i)
+        ≤ ∑ _i : Fin N, ∑ _j : Fin N, B :=
+          Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ => hij i j
+      _ = B * (N : ℝ) ^ 2 := by
+          simp [Finset.sum_const, Finset.card_univ]; ring
+  exact mul_le_mul_of_nonpos_left hsum (by linarith)
+
+set_option maxHeartbeats 800000 in
+/-- General Lyapunov–Barbalat step: `∑ F_i² → 0` along the weighted Kuramoto
+ODE for any symmetric coupling matrix. The uniform entry bound `B` needed for
+the Lipschitz and bounded-below estimates is derived internally (the matrix is
+finite), so no ceiling hypothesis is required. -/
+private theorem sum_F_sq_tendsto_zero_general
+    (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
+    (W : Fin N → Fin N → ℝ) (hWsym : ∀ i j, W i j = W j i)
+    (θ : ℝ → Fin N → ℝ)
+    (hsol : ∀ t, HasDerivAt θ (kuramotoVectorField K N W (θ t)) t) :
+    Filter.Tendsto (fun t => ∑ i : Fin N, (weightedKuramotoF K N W i (θ t)) ^ 2)
+      Filter.atTop (nhds 0) := by
+  -- A uniform bound on the matrix entries, available since the matrix is finite.
+  obtain ⟨B, hB1, hWB⟩ : ∃ B : ℝ, 1 ≤ B ∧ ∀ i j, |W i j| ≤ B := by
+    refine ⟨1 + ∑ i, ∑ j, |W i j|, ?_, ?_⟩
+    · have h0 : (0:ℝ) ≤ ∑ i, ∑ j, |W i j| :=
+        Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => abs_nonneg _
+      linarith
+    · intro i j
+      have h1 : |W i j| ≤ ∑ j', |W i j'| :=
+        Finset.single_le_sum (f := fun j' => |W i j'|)
+          (fun j' _ => abs_nonneg _) (Finset.mem_univ j)
+      have h2 : (∑ j', |W i j'|) ≤ ∑ i', ∑ j', |W i' j'| :=
+        Finset.single_le_sum (f := fun i' => ∑ j', |W i' j'|)
+          (fun i' _ => Finset.sum_nonneg fun j' _ => abs_nonneg _) (Finset.mem_univ i)
+      linarith
+  have hB0 : (0:ℝ) < B := lt_of_lt_of_le one_pos hB1
+  -- Pointwise bound |F_i| ≤ K·N·B.
+  have h_F_bound : ∀ (φ : Fin N → ℝ) (i : Fin N),
+      |weightedKuramotoF K N W i φ| ≤ K * N * B := by
+    intro φ i
+    unfold weightedKuramotoF
+    rw [abs_mul, abs_of_pos hK]
+    have hterm : ∀ j, |W i j * Real.sin (φ j - φ i)| ≤ B := by
+      intro j
+      rw [abs_mul]
+      calc |W i j| * |Real.sin (φ j - φ i)| ≤ B * 1 :=
+            mul_le_mul (hWB i j) (Real.abs_sin_le_one _) (abs_nonneg _) hB0.le
+        _ = B := mul_one B
+    calc K * |∑ j, W i j * Real.sin (φ j - φ i)|
+        ≤ K * ∑ j, |W i j * Real.sin (φ j - φ i)| :=
+          mul_le_mul_of_nonneg_left (Finset.abs_sum_le_sum_abs _ _) hK.le
+      _ ≤ K * ∑ _j : Fin N, B :=
+          mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun j _ => hterm j) hK.le
+      _ = K * N * B := by
+          simp [Finset.sum_const, Finset.card_univ]; ring
+  -- The function t ↦ ∑ F_i(θ t)² is Lipschitz.
+  have h_lipschitz : ∃ C > 0, ∀ s t,
+      |∑ i, (weightedKuramotoF K N W i (θ s))^2
+        - ∑ i, (weightedKuramotoF K N W i (θ t))^2| ≤ C * |s - t| := by
+    -- The derivative of F_i ∘ θ is bounded.
+    have h_deriv_bound : ∃ C > 0, ∀ t, ∀ i,
+        |deriv (fun t => weightedKuramotoF K N W i (θ t)) t| ≤ C := by
+      -- Chain rule (identical to the all-to-all case; W-agnostic).
+      have h_deriv : ∀ t i, deriv (fun t => weightedKuramotoF K N W i (θ t)) t
+          = K * ∑ j, W i j * Real.cos ((θ t) j - (θ t) i)
+              * (weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t)) := by
+        intro t i;
+        have h_deriv : deriv (fun t => weightedKuramotoF K N W i (θ t)) t
+            = K * ∑ j, W i j * deriv (fun t => Real.sin ((θ t) j - (θ t) i)) t := by
+          simp +decide [ weightedKuramotoF ];
+          have h_deriv : ∀ j, DifferentiableAt ℝ (fun t => Real.sin ((θ t) j - (θ t) i)) t := by
+            intro j; exact DifferentiableAt.sin ( DifferentiableAt.sub ( differentiableAt_pi.1 ( hsol t |> HasDerivAt.differentiableAt ) j ) ( differentiableAt_pi.1 ( hsol t |> HasDerivAt.differentiableAt ) i ) ) ;
+          norm_num [ h_deriv ];
+        rw [ h_deriv ];
+        refine' congrArg _ ( Finset.sum_congr rfl fun j _ => _ );
+        convert congr_arg _ ( HasDerivAt.deriv ( HasDerivAt.sin ( HasDerivAt.sub ( hasDerivAt_pi.1 ( hsol t ) j ) ( hasDerivAt_pi.1 ( hsol t ) i ) ) ) ) using 1 ; ring!;
+      -- Each summand is bounded by B · 2·K·N·B.
+      have h_term_bound : ∀ t i j,
+          |W i j * Real.cos ((θ t) j - (θ t) i)
+            * (weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t))|
+          ≤ B * (2 * (K * N * B)) := by
+        intro t i j
+        have hWcos : |W i j * Real.cos ((θ t) j - (θ t) i)| ≤ B := by
+          rw [abs_mul]
+          calc |W i j| * |Real.cos ((θ t) j - (θ t) i)| ≤ B * 1 :=
+                mul_le_mul (hWB i j) (Real.abs_cos_le_one _) (abs_nonneg _) hB0.le
+            _ = B := mul_one B
+        have hdiff : |weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t)|
+            ≤ 2 * (K * N * B) := by
+          have h1 := h_F_bound (θ t) j
+          have h2 := h_F_bound (θ t) i
+          calc |weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t)|
+              ≤ |weightedKuramotoF K N W j (θ t)| + |weightedKuramotoF K N W i (θ t)| :=
+                abs_sub _ _
+            _ ≤ 2 * (K * N * B) := by linarith
+        calc |W i j * Real.cos ((θ t) j - (θ t) i)
+              * (weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t))|
+            = |W i j * Real.cos ((θ t) j - (θ t) i)|
+              * |weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t)| :=
+              abs_mul _ _
+          _ ≤ B * (2 * (K * N * B)) :=
+              mul_le_mul hWcos hdiff (abs_nonneg _) hB0.le
+      refine ⟨K * (N * (B * (2 * (K * N * B)))), by positivity, fun t i => ?_⟩
+      rw [h_deriv t i, abs_mul, abs_of_pos hK]
+      refine mul_le_mul_of_nonneg_left ?_ hK.le
+      calc |∑ j, W i j * Real.cos ((θ t) j - (θ t) i)
+            * (weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t))|
+          ≤ ∑ j, |W i j * Real.cos ((θ t) j - (θ t) i)
+            * (weightedKuramotoF K N W j (θ t) - weightedKuramotoF K N W i (θ t))| :=
+            Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ _j : Fin N, B * (2 * (K * N * B)) :=
+            Finset.sum_le_sum fun j _ => h_term_bound t i j
+        _ = N * (B * (2 * (K * N * B))) := by
+            simp [Finset.sum_const, Finset.card_univ]
+    -- Per-coordinate Lipschitz bound via the mean value theorem.
+    obtain ⟨C, hC_pos, hC_bound⟩ := h_deriv_bound;
+    have h_lipschitz : ∀ s t, ∀ i,
+        |weightedKuramotoF K N W i (θ s) - weightedKuramotoF K N W i (θ t)| ≤ C * |s - t| := by
+      have h_mvt : ∀ s t i, s < t → ∃ c ∈ Set.Ioo s t,
+          deriv (fun t => weightedKuramotoF K N W i (θ t)) c
+            = (weightedKuramotoF K N W i (θ t) - weightedKuramotoF K N W i (θ s)) / (t - s) := by
+        intros s t i hst; apply_rules [ exists_deriv_eq_slope ];
+        · refine' Continuous.continuousOn _;
+          have h_cont : Continuous θ := by
+            exact continuous_iff_continuousAt.mpr fun t => HasDerivAt.continuousAt ( hsol t );
+          exact Continuous.mul continuous_const <| continuous_finsetSum _ fun j _ => Continuous.mul ( continuous_const ) <| Real.continuous_sin.comp <| Continuous.sub ( continuous_apply j |> Continuous.comp <| h_cont ) ( continuous_apply i |> Continuous.comp <| h_cont );
+        · have h_diff : DifferentiableOn ℝ (fun t => θ t) (Set.Ioo s t) := by
+            exact fun x hx => ( hsol x |> HasDerivAt.differentiableAt |> DifferentiableAt.differentiableWithinAt );
+          simp_all +decide [ weightedKuramotoF ];
+          fun_prop (disch := norm_num);
+      intro s t i; rcases lt_trichotomy s t with ( h | rfl | h ) <;> norm_num;
+      · obtain ⟨ c, hc₁, hc₂ ⟩ := h_mvt s t i h ; rw [ abs_le ] ; constructor <;> cases abs_cases ( s - t ) <;> nlinarith [ abs_le.mp ( hC_bound c i ), mul_div_cancel₀ ( weightedKuramotoF K N W i ( θ t ) - weightedKuramotoF K N W i ( θ s ) ) ( sub_ne_zero_of_ne h.ne' ) ];
+      · obtain ⟨ c, hc₁, hc₂ ⟩ := h_mvt t s i h ; rw [ abs_le ] ; constructor <;> cases abs_cases ( s - t ) <;> nlinarith [ abs_le.mp ( hC_bound c i ), mul_div_cancel₀ ( weightedKuramotoF K N W i ( θ s ) - weightedKuramotoF K N W i ( θ t ) ) ( sub_ne_zero_of_ne h.ne' ) ];
+    -- Assemble: sum of squares is Lipschitz with constant N · 2KNB · C.
+    refine ⟨(N : ℝ) * (2 * (K * N * B)) * C, by positivity, fun s t => ?_⟩
+    have key : ∀ i : Fin N,
+        |(weightedKuramotoF K N W i (θ s))^2 - (weightedKuramotoF K N W i (θ t))^2|
+        ≤ 2 * (K * N * B) * C * |s - t| := by
+      intro i
+      have h1 := h_lipschitz s t i
+      have h2 := h_F_bound (θ s) i
+      have h3 := h_F_bound (θ t) i
+      have hfactor : (weightedKuramotoF K N W i (θ s))^2 - (weightedKuramotoF K N W i (θ t))^2
+          = (weightedKuramotoF K N W i (θ s) - weightedKuramotoF K N W i (θ t))
+            * (weightedKuramotoF K N W i (θ s) + weightedKuramotoF K N W i (θ t)) := by ring
+      rw [hfactor, abs_mul]
+      have hsum_abs : |weightedKuramotoF K N W i (θ s) + weightedKuramotoF K N W i (θ t)|
+          ≤ 2 * (K * N * B) := le_trans (abs_add_le _ _) (by linarith)
+      calc |weightedKuramotoF K N W i (θ s) - weightedKuramotoF K N W i (θ t)|
+            * |weightedKuramotoF K N W i (θ s) + weightedKuramotoF K N W i (θ t)|
+          ≤ (C * |s - t|) * (2 * (K * N * B)) :=
+            mul_le_mul h1 hsum_abs (abs_nonneg _) (by positivity)
+        _ = 2 * (K * N * B) * C * |s - t| := by ring
+    rw [← Finset.sum_sub_distrib]
+    calc |∑ i, ((weightedKuramotoF K N W i (θ s))^2 - (weightedKuramotoF K N W i (θ t))^2)|
+        ≤ ∑ i, |(weightedKuramotoF K N W i (θ s))^2 - (weightedKuramotoF K N W i (θ t))^2| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ _i : Fin N, 2 * (K * N * B) * C * |s - t| :=
+          Finset.sum_le_sum fun i _ => key i
+      _ = (N : ℝ) * (2 * (K * N * B)) * C * |s - t| := by
+          simp [Finset.sum_const, Finset.card_univ]; ring
+  obtain ⟨C, hC_pos, hC⟩ := h_lipschitz
+  have h_f_nonneg : ∀ t, 0 ≤ ∑ i, (weightedKuramotoF K N W i (θ t))^2 := by
+    exact fun t => Finset.sum_nonneg fun _ _ => sq_nonneg _
+  have h_F_deriv : ∀ t, HasDerivAt (fun s => -(weightedKuramotoV K N W (θ s)))
+      (∑ i, (weightedKuramotoF K N W i (θ t))^2) t := by
+    intro t;
+    convert HasDerivAt.neg ( lyapunov_nonincreasing_along_trajectory K hK N W hWsym θ hsol t ) using 1 ; rw [ lyapunov_derivative_eq K N W hWsym ( θ t ) ] ; ring!;
+  have h_F_bdd : BddAbove (Set.range (fun t => -(weightedKuramotoV K N W (θ t)))) := by
+    use (K / 2) * (B * (N : ℝ) ^ 2)
+    rintro x ⟨t, rfl⟩
+    have h := weightedKuramotoV_bounded_below_abs K hK N W B hB0.le hWB (θ t)
+    nlinarith [h]
+  exact barbalat_of_nonneg_lipschitz h_f_nonneg (fun s t => hC s t) hC_pos h_F_deriv h_F_bdd
+
+/-- Floor analogue of `semicircle_preserved_uniform`: a single `C < π` bounds
+every pairwise phase difference for all forward time. -/
+private theorem semicircle_preserved_uniform_floor
+    (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
+    (W : Fin N → Fin N → ℝ)
+    (w_min : ℝ) (hw : 0 < w_min)
+    (hWfloor : ∀ i j, i ≠ j → w_min ≤ W i j)
+    (θ : ℝ → Fin N → ℝ)
+    (hsol : ∀ t, HasDerivAt θ (kuramotoVectorField K N W (θ t)) t)
+    (hsemi0 : ∀ a b : Fin N, |θ 0 a - θ 0 b| < Real.pi) :
+    ∃ C : ℝ, C < Real.pi ∧ ∀ s, 0 ≤ s → ∀ a b : Fin N, |θ s a - θ s b| ≤ C := by
+  set D₀ := Finset.sup' (Finset.univ : Finset (Fin N × Fin N))
+    ⟨(⟨0, by omega⟩, ⟨0, by omega⟩), Finset.mem_univ _⟩
+    (fun p : Fin N × Fin N => θ 0 p.1 - θ 0 p.2) with hD₀_def
+  have hD₀_lt_pi : D₀ < Real.pi := by
+    rw [Finset.sup'_lt_iff]
+    exact fun p _ => lt_of_le_of_lt (le_abs_self _) (hsemi0 p.1 p.2)
+  have hD₀_init : ∀ p : Fin N × Fin N, θ 0 p.1 - θ 0 p.2 ≤ D₀ :=
+    fun p => Finset.le_sup' (fun p : Fin N × Fin N => θ 0 p.1 - θ 0 p.2) (Finset.mem_univ p)
+  set C := (D₀ + Real.pi) / 2 with hC_def
+  have hD₀_ge : 0 ≤ D₀ := le_trans (le_of_eq (sub_self (θ 0 ⟨0, by omega⟩)).symm)
+    (hD₀_init (⟨0, by omega⟩, ⟨0, by omega⟩))
+  have hC_lt_pi : C < Real.pi := by simp only [C]; linarith
+  have hC_gt_D₀ : D₀ < C := by simp only [C]; linarith [Real.pi_pos]
+  have h_all : ∀ s, 0 ≤ s → ∀ p : Fin N × Fin N, θ s p.1 - θ s p.2 ≤ C := by
+    haveI : Nonempty (Fin N × Fin N) := ⟨(⟨0, by omega⟩, ⟨0, by omega⟩)⟩
+    exact finite_max_stays_below'
+      (fun p : Fin N × Fin N => fun s => θ s p.1 - θ s p.2) C
+      (fun p => Differentiable.sub
+        (fun s => differentiableAt_pi.1 (hsol s).differentiableAt p.1)
+        (fun s => differentiableAt_pi.1 (hsol s).differentiableAt p.2))
+      (fun p => le_of_lt (lt_of_le_of_lt (hD₀_init p) hC_gt_D₀))
+      (fun s p hs hle heq hmax => by
+        have hab : p.1 ≠ p.2 := by
+          intro h; simp [h] at heq; linarith
+        have hmax_phase : ∀ k, θ s k ≤ θ s p.1 := fun k => by
+          linarith [hle (k, p.2)]
+        have hmin_phase : ∀ k, θ s p.2 ≤ θ s k := fun k => by
+          linarith [hle (p.1, k)]
+        rw [show deriv (fun s => θ s p.1 - θ s p.2) s =
+          weightedKuramotoF K N W p.1 (θ s) - weightedKuramotoF K N W p.2 (θ s) from
+          HasDerivAt.deriv (HasDerivAt.sub (hasDerivAt_pi.1 (hsol s) p.1)
+            (hasDerivAt_pi.1 (hsol s) p.2))]
+        exact floor_strict_extremal_contraction K hK N W w_min hw hWfloor
+          (θ s) p.1 p.2 hab hmax_phase hmin_phase (by linarith) (by linarith))
+  exact ⟨C, hC_lt_pi, fun s hs a b =>
+    abs_le.mpr ⟨by linarith [h_all s hs (b, a)], h_all s hs (a, b)⟩⟩
+
+/-- Floor analogue of `phase_diffs_tend_to_zero`: under uniform confinement and
+`∑ F_i² → 0`, all phase differences tend to 0. The diameter is squeezed via
+`K·w_min·sin(D t) ≤ F_argmin ≤ ∑|F_i| → 0`. -/
+private theorem phase_diffs_tend_to_zero_floor
+    (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
+    (W : Fin N → Fin N → ℝ)
+    (w_min : ℝ) (hw : 0 < w_min)
+    (hWfloor : ∀ i j, i ≠ j → w_min ≤ W i j)
+    (θ : ℝ → Fin N → ℝ)
+    (C : ℝ) (hCpi : C < Real.pi)
+    (hdiam : ∀ s, 0 ≤ s → ∀ a b : Fin N, |θ s a - θ s b| ≤ C)
+    (hF_zero : Filter.Tendsto (fun t => ∑ i : Fin N, (weightedKuramotoF K N W i (θ t)) ^ 2)
+      Filter.atTop (nhds 0)) :
+    ∀ a b : Fin N, Filter.Tendsto (fun t => θ t a - θ t b) Filter.atTop (nhds 0) := by
+  have hpairne : (Finset.univ : Finset (Fin N × Fin N)).Nonempty :=
+    ⟨(⟨0, by omega⟩, ⟨0, by omega⟩), Finset.mem_univ _⟩
+  set D : ℝ → ℝ := fun t => (Finset.univ : Finset (Fin N × Fin N)).sup' hpairne
+      (fun p => θ t p.1 - θ t p.2) with hD_def
+  have hD_nonneg : ∀ t, 0 ≤ D t := by
+    intro t
+    have h0 : θ t (⟨0, by omega⟩ : Fin N) - θ t (⟨0, by omega⟩ : Fin N) ≤ D t :=
+      Finset.le_sup' (fun p : Fin N × Fin N => θ t p.1 - θ t p.2)
+        (Finset.mem_univ ((⟨0, by omega⟩ : Fin N), (⟨0, by omega⟩ : Fin N)))
+    simpa using h0
+  have hD_le : ∀ t, 0 ≤ t → D t ≤ C := by
+    intro t ht
+    refine Finset.sup'_le hpairne _ (fun p _ => ?_)
+    exact le_trans (le_abs_self _) (hdiam t ht p.1 p.2)
+  have hsumabs : Filter.Tendsto (fun t => ∑ i, |weightedKuramotoF K N W i (θ t)|)
+      Filter.atTop (nhds 0) := sum_abs_tendsto_zero_of_sum_sq hF_zero
+  have hKsin : Filter.Tendsto (fun t => K * w_min * Real.sin (D t)) Filter.atTop (nhds 0) := by
+    refine squeeze_zero' ?_ ?_ hsumabs
+    · filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with t ht
+      have hs0 : 0 ≤ Real.sin (D t) :=
+        Real.sin_nonneg_of_nonneg_of_le_pi (hD_nonneg t)
+          (le_of_lt (lt_of_le_of_lt (hD_le t ht) hCpi))
+      exact mul_nonneg (mul_nonneg (le_of_lt hK) (le_of_lt hw)) hs0
+    · filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with t ht
+      obtain ⟨p, -, hp_eq⟩ := Finset.exists_mem_eq_sup' hpairne
+        (fun p : Fin N × Fin N => θ t p.1 - θ t p.2)
+      have hDval : D t = θ t p.1 - θ t p.2 := hp_eq
+      have hmax : ∀ k, θ t k ≤ θ t p.1 := by
+        intro k
+        have hk : θ t k - θ t p.2 ≤ D t :=
+          Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+            (Finset.mem_univ ((k, p.2) : Fin N × Fin N))
+        linarith
+      have hmin : ∀ k, θ t p.2 ≤ θ t k := by
+        intro k
+        have hk : θ t p.1 - θ t k ≤ D t :=
+          Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+            (Finset.mem_univ ((p.1, k) : Fin N × Fin N))
+        linarith
+      have hDpi : θ t p.1 - θ t p.2 < Real.pi := by
+        have := hD_le t ht; linarith
+      have hFm : K * w_min * Real.sin (θ t p.1 - θ t p.2) ≤ weightedKuramotoF K N W p.2 (θ t) :=
+        floorF_min_ge_Ksin K hK W w_min hw hWfloor (θ t) p.2 p.1 hmin hmax hDpi
+      have hle_abs : weightedKuramotoF K N W p.2 (θ t)
+          ≤ |weightedKuramotoF K N W p.2 (θ t)| := le_abs_self _
+      have hsum : |weightedKuramotoF K N W p.2 (θ t)|
+          ≤ ∑ i, |weightedKuramotoF K N W i (θ t)| :=
+        Finset.single_le_sum (f := fun i => |weightedKuramotoF K N W i (θ t)|)
+          (fun i _ => abs_nonneg _) (Finset.mem_univ p.2)
+      rw [hDval]; linarith
+  have hsin : Filter.Tendsto (fun t => Real.sin (D t)) Filter.atTop (nhds 0) := by
+    have hKw : (0:ℝ) < K * w_min := mul_pos hK hw
+    have h := hKsin.const_mul (K * w_min)⁻¹
+    simp only [mul_zero] at h
+    refine h.congr fun t => ?_
+    rw [← mul_assoc, inv_mul_cancel₀ (ne_of_gt hKw), one_mul]
+  have hDtends : Filter.Tendsto D Filter.atTop (nhds 0) :=
+    diam_tendsto_zero_of_sin_tendsto_zero hCpi
+      (Filter.Eventually.of_forall hD_nonneg)
+      ((Filter.eventually_ge_atTop (0 : ℝ)).mono (fun t ht => hD_le t ht))
+      hsin
+  intro a b
+  refine squeeze_zero_norm' ?_ hDtends
+  filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with t ht
+  have h1 : θ t a - θ t b ≤ D t :=
+    Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+      (Finset.mem_univ ((a, b) : Fin N × Fin N))
+  have h2 : θ t b - θ t a ≤ D t :=
+    Finset.le_sup' (fun q : Fin N × Fin N => θ t q.1 - θ t q.2)
+      (Finset.mem_univ ((b, a) : Fin N × Fin N))
+  rw [Real.norm_eq_abs]
+  exact abs_le.mpr ⟨by linarith, h1⟩
+
+/-- **Convergence to synchrony under floor coupling.** For any symmetric
+coupling matrix `W` with a uniform positive off-diagonal floor
+(`w_min ≤ W i j` for `i ≠ j`, `w_min > 0`), coupling strength `K > 0`,
+`N ≥ 2` oscillators, and initial phases in an open semicircle, the order
+parameter norm tends to 1. Generalizes `allToAll_convergence_to_synchrony`
+(the all-to-all matrix satisfies the floor with `w_min = 1`); note that no
+nonnegativity or zero-diagonal hypothesis is needed — off-diagonal
+nonnegativity follows from the floor and diagonal entries are inert. -/
+theorem floor_coupling_convergence_to_synchrony
+    (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
+    (W : Fin N → Fin N → ℝ) (hWsym : ∀ i j, W i j = W j i)
+    (w_min : ℝ) (hw : 0 < w_min)
+    (hWfloor : ∀ i j, i ≠ j → w_min ≤ W i j)
+    (θ : ℝ → Fin N → ℝ)
+    (hsol : ∀ t, HasDerivAt θ (kuramotoVectorField K N W (θ t)) t)
+    (hsemi : ∀ a b : Fin N, |θ 0 a - θ 0 b| < Real.pi) :
+    Filter.Tendsto (fun t => ‖kuramotoR N (θ t)‖) Filter.atTop (nhds 1) := by
+  obtain ⟨C, hCpi, hdiam⟩ :=
+    semicircle_preserved_uniform_floor K hK N hN W w_min hw hWfloor θ hsol hsemi
+  have hF_zero := sum_F_sq_tendsto_zero_general K hK N hN W hWsym θ hsol
+  have hconv := phase_diffs_tend_to_zero_floor K hK N hN W w_min hw hWfloor θ C hCpi hdiam hF_zero
+  exact R_norm_of_phase_convergence N hN θ hconv
+
+/-- Sanity corollary: the all-to-all convergence theorem is subsumed by the
+floor-coupling theorem with `w_min = 1`. (`allToAll_convergence_to_synchrony`
+itself is kept intact above.) -/
+theorem allToAll_convergence_to_synchrony'
+    (K : ℝ) (hK : 0 < K) (N : ℕ) (hN : 2 ≤ N)
+    (W : Fin N → Fin N → ℝ) (_hWdiag : ∀ i, W i i = 0)
+    (hWoff : ∀ i j, i ≠ j → W i j = 1)
+    (θ : ℝ → Fin N → ℝ)
+    (hsol : ∀ t, HasDerivAt θ (kuramotoVectorField K N W (θ t)) t)
+    (hsemi : ∀ a b : Fin N, |θ 0 a - θ 0 b| < Real.pi) :
+    Filter.Tendsto (fun t => ‖kuramotoR N (θ t)‖) Filter.atTop (nhds 1) := by
+  refine floor_coupling_convergence_to_synchrony K hK N hN W ?_ 1 one_pos ?_ θ hsol hsemi
+  · intro i j; by_cases hij : i = j
+    · subst hij; rfl
+    · rw [hWoff i j hij, hWoff j i (Ne.symm hij)]
+  · intro i j hij; exact le_of_eq (hWoff i j hij).symm
+
+/-! Transcript pin for the floor-coupling headline theorem: the footprint is
+exactly the three standard foundations. The build fails if it ever drifts. -/
+
+/--
+info: 'floor_coupling_convergence_to_synchrony' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms floor_coupling_convergence_to_synchrony
+
 end

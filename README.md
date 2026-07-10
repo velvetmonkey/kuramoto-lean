@@ -6,11 +6,15 @@
 [![Proofs](https://img.shields.io/badge/proofs-29%20proved%20%2F%200%20sorry-brightgreen)](Kuramoto)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20468618-blue)](https://doi.org/10.5281/zenodo.20468618)
 [![Companion project](https://img.shields.io/badge/companion-flywheel--universe-d4af37)](https://github.com/velvetmonkey/flywheel-universe)
-[![Live demo](https://img.shields.io/badge/demo-live-d4af37)](https://velvetmonkey.github.io/flywheel-universe/)
+[![Coordination kernel demo](https://img.shields.io/badge/demo-coordination_kernel-4a7fd4)](https://velvetmonkey.github.io/flywheel-universe/coordination-kernel.html)
+[![Hebbian Kuramoto demo](https://img.shields.io/badge/demo-hebbian_kuramoto-d4af37)](https://velvetmonkey.github.io/flywheel-universe/hebbian-kuramoto.html)
 
 This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The seven core modules contain 14 zero-sorry theorems; the frontier module adds 15 further statements, all fully proved, including convergence to synchrony for both all-to-all coupling and, more generally, any symmetric coupling with a uniform positive off-diagonal floor (from open-semicircle initial data). The entire library is `sorry`-free.
 
-This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. The companion project includes a [live browser demo](https://velvetmonkey.github.io/flywheel-universe/) of Hebbian Kuramoto synchronisation across several graph topologies.
+This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. Two live browser demos accompany the proofs:
+
+- **[Coordination kernel](https://velvetmonkey.github.io/flywheel-universe/coordination-kernel.html)** — proof-linked to this repo's headline theorem `floor_coupling_convergence_to_synchrony`. Cut the coupling floor and watch the guarantee go silent: a live witness that the theorem promises exactly what it claims, no more.
+- **[Hebbian Kuramoto](https://velvetmonkey.github.io/flywheel-universe/hebbian-kuramoto.html)** — budgeted Hebbian Kuramoto synchronisation across several graph topologies, the Max-Cut companion dynamics.
 
 ## Headline results
 
@@ -180,15 +184,15 @@ This Lean repo makes the central mathematical spine of that project machine-chec
 Useful links:
 
 - Project repo: <https://github.com/velvetmonkey/flywheel-universe>
-- Live demo: <https://velvetmonkey.github.io/flywheel-universe/>
-- Demo source: <https://github.com/velvetmonkey/flywheel-universe/blob/main/demos/hebbian-kuramoto.html>
+- Coordination kernel demo (proof-linked to `floor_coupling_convergence_to_synchrony`): <https://velvetmonkey.github.io/flywheel-universe/coordination-kernel.html> ([source](https://github.com/velvetmonkey/flywheel-universe/blob/main/demos/coordination-kernel.html))
+- Hebbian Kuramoto demo: <https://velvetmonkey.github.io/flywheel-universe/hebbian-kuramoto.html> ([source](https://github.com/velvetmonkey/flywheel-universe/blob/main/demos/hebbian-kuramoto.html))
 - Zenodo paper: <https://zenodo.org/records/20303914>
 
 ## Related work
 
 - `taejun-song/kuramoto-lean`: comprehensive Lean 4 formalisation via the Ott-Antonsen manifold; it studies the continuum-limit approach, while this library focuses on finite-N geometric and Lyapunov identities.
 - `facebookresearch/atlas-lean`: ATLAS autoformalized textbook library; its `FourierAnalysis` module provides AddCircle scaffolding used in early exploration.
-- [`velvetmonkey/flywheel-universe`](https://github.com/velvetmonkey/flywheel-universe): Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece descent claim of the companion paper. See the [live demo](https://velvetmonkey.github.io/flywheel-universe/).
+- [`velvetmonkey/flywheel-universe`](https://github.com/velvetmonkey/flywheel-universe): Budgeted Hebbian Kuramoto dynamics for Max-Cut; the `Hebbian.lean` and `Connections.lean` modules here formally close the centrepiece descent claim of the companion paper. See the [Hebbian Kuramoto demo](https://velvetmonkey.github.io/flywheel-universe/hebbian-kuramoto.html).
 - [`velvetmonkey/gradient-descent-lean`](https://github.com/velvetmonkey/gradient-descent-lean): companion Lean 4 library formalising gradient descent convergence for smooth convex optimisation -- O(1/k) and geometric rates, 18 theorems, zero sorry. Zenodo: <https://doi.org/10.5281/zenodo.20472996>.
 - Zenodo paper: <https://doi.org/10.5281/zenodo.20468618>
 
@@ -219,4 +223,4 @@ lake build
 
 This project is part of the witness-theory research programme connecting gradient descent, synchronisation, and observer dynamics.
 
-Part of the [Lean proof corpus](https://github.com/velvetmonkey/lean), a unified index of machine-checked Lean 4 developments ([live index](https://velvetmonkey.github.io/lean)). See also the companion [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) project and its [live demo](https://velvetmonkey.github.io/flywheel-universe/).
+Part of the [Lean proof corpus](https://github.com/velvetmonkey/lean), a unified index of machine-checked Lean 4 developments ([live index](https://velvetmonkey.github.io/lean)). See also the companion [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) project and its live demos ([coordination kernel](https://velvetmonkey.github.io/flywheel-universe/coordination-kernel.html), [Hebbian Kuramoto](https://velvetmonkey.github.io/flywheel-universe/hebbian-kuramoto.html)).

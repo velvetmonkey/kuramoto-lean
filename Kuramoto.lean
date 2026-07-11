@@ -7,3 +7,4 @@ import Kuramoto.Hebbian
 import Kuramoto.Connections
 import Kuramoto.WitnessGeometry
 import Kuramoto.Frontier
+import Kuramoto.Discrete

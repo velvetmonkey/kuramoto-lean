@@ -9,7 +9,7 @@
 [![Coordination kernel demo](https://img.shields.io/badge/demo-coordination_kernel-4a7fd4)](https://velvetmonkey.github.io/flywheel-universe/coordination-kernel.html)
 [![Hebbian Kuramoto demo](https://img.shields.io/badge/demo-hebbian_kuramoto-d4af37)](https://velvetmonkey.github.io/flywheel-universe/hebbian-kuramoto.html)
 
-This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The seven core modules contain 14 zero-sorry theorems; the frontier module adds 15 further statements, all fully proved, including convergence to synchrony for both all-to-all coupling and, more generally, any symmetric coupling with a uniform positive off-diagonal floor (from open-semicircle initial data); and a discrete fleet-clock module adds 3 more, proving that a fixed-step (Euler) update keeps a fleet's phase skew bounded with no coordinator. The entire library is `sorry`-free.
+This library formally proves finite-N results about the Kuramoto model of coupled oscillators in Lean 4 / Mathlib. It takes a geometric approach on T^N, distinct from the Ott-Antonsen manifold approach in taejun-song/kuramoto-lean. The tracked Lean files contain 39 top-level `theorem` declarations: 9 in the core modules, 14 in `Frontier.lean`, 4 in `Discrete.lean`, and 12 in `DiscreteConvergence.lean`, all fully proved, including convergence to synchrony for both all-to-all coupling and, more generally, any symmetric coupling with a uniform positive off-diagonal floor (from open-semicircle initial data); and a discrete fleet-clock line proving that a fixed-step (Euler) update keeps a fleet's phase skew bounded with no coordinator. The entire library is `sorry`-free. The count excludes all `lemma` declarations, including private helper lemmas, and any tests or examples.
 
 This repo is the formal proof spine for the companion project [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe), which studies budgeted Hebbian Kuramoto dynamics for Max-Cut under coupling-resource constraints. Two live browser demos accompany the proofs:
 
@@ -25,7 +25,7 @@ Two machine-checked convergence-to-synchrony theorems, both `sorry`-free with ax
 
 Both theorems are **precisely scoped by their hypotheses, and neither is a general Kuramoto synchronisation claim.** Indefinite coupling, coupling without a uniform floor, or initial data outside an open semicircle fall outside what is proved; the library is silent there, by design.
 
-The full library is **34 theorem statements, all machine-checked `sorry`-free, `admit`-free, with no new axioms**: 14 in the algebraic core, 15 on the ODE / convergence frontier, and 5 across the discrete fleet-clock line (confinement + geometric convergence).
+The full library is **39 top-level theorem declarations, all machine-checked `sorry`-free, `admit`-free, with no new axioms**: 9 in the algebraic core, 14 in the ODE / convergence frontier, 4 in the discrete fleet-clock line, and 12 in its discrete-convergence support. Reproduce the count from the repository root with `git grep -h -E '^theorem ' -- '*.lean' | wc -l`; this counts tracked `.lean` files and excludes tests, examples, and all `lemma` declarations.
 
 ## Discrete fleet-clock: coordinator-free bounded skew
 
@@ -52,7 +52,7 @@ This release (v3): https://doi.org/10.5281/zenodo.21300158
 
 ### Unreleased (2026-07-11) — discrete fleet-clock + convergence
 
-Adds `Kuramoto/Discrete.lean` and `Kuramoto/DiscreteConvergence.lean`, the discrete-time line (not yet in the Zenodo paper; paper stays at 29). Repo now carries **34** machine-checked theorem statements, `sorry`-free, `admit`-free, footprint `{propext, Classical.choice, Quot.sound}`.
+Adds `Kuramoto/Discrete.lean` and `Kuramoto/DiscreteConvergence.lean`, the discrete-time line (not yet in the Zenodo paper; paper stays at 29). Repo now carries **39** machine-checked top-level theorem declarations, `sorry`-free, `admit`-free, footprint `{propext, Classical.choice, Quot.sound}`.
 
 - `discreteStep_diam_le` / `discreteFlow_bounded_skew`: a fixed-step (Euler) update of the weighted vector field keeps the phase skew non-increasing, hence bounded below `π` for all time, coordinator-free, under the step bound `h·K·rowSum ≤ 1`.
 - `fleet_clock_two_nodes_bounded_skew`: runnable `N = 2` witness at the step boundary.
@@ -92,6 +92,8 @@ A Lean 4 proof with zero sorry, zero admit, and zero new axioms is a machine-che
 All proofs were developed using an explicit API verification step: every Mathlib lemma name was `#check`ed against the pinned Mathlib commit before appearing in a proof. Names that failed `#check` were reported and not used. This prevents the most common failure mode in AI-assisted Lean development: hallucinated API names that compile locally against a wrong version.
 
 ## Results
+
+The summary below records the pre-discrete module breakdown historically; the current total is the 39 top-level declaration count stated above and is reproduced by the command there.
 
 Summary: the seven core modules (`OrderParameter`, `GradientFlow`, `Contraction`, `Weighted`, `Hebbian`, `Connections`, and `WitnessGeometry`) contain 14 theorems with zero `sorry`, zero `admit`, and no new axioms. `Kuramoto/Frontier.lean` adds 15 frontier theorems, all fully proved, including two convergence-to-synchrony results: `allToAll_convergence_to_synchrony` (all-to-all, closed 2026-06-09) and the more general `floor_coupling_convergence_to_synchrony` (any symmetric coupling with a uniform positive off-diagonal floor, closed 2026-07-10; all-to-all follows as the `w_min = 1` corollary `allToAll_convergence_to_synchrony'`). That last theorem was closed without waiting for Mathlib's `Flow`/`OmegaLimit` machinery: a Lipschitz-form Barbalat lemma (`barbalat_of_nonneg_lipschitz`), uniform semicircle confinement (`semicircle_preserved`), and a phase-diameter squeeze (`phase_diffs_tend_to_zero`, via the analysis core `diam_tendsto_zero_of_sin_tendsto_zero`) were proved directly, turning algebraic Lyapunov descent into full trajectory convergence. `Kuramoto/Discrete.lean` then adds the discrete-time fleet-clock extension: 3 theorems proving coordinator-free bounded phase skew for a fixed-step (Euler) update (`discreteStep_diam_le`, `discreteFlow_bounded_skew`, and the runnable witness `fleet_clock_two_nodes_bounded_skew`). `Kuramoto/DiscreteConvergence.lean` closes the residual with 2 more (`discreteStep_diam_contract`, `discreteFlow_tendsto_zero`): for `N ≥ 3` the discrete skew contracts to zero geometrically, via a stochastic-averaging reformulation and the Dobrushin ergodicity coefficient. Total coverage is 34 theorem statements, all fully proved sorry-free, with axiom footprint `{propext, Classical.choice, Quot.sound}`.
 

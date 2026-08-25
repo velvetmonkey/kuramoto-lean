@@ -5,8 +5,8 @@ authors:
   - family-names: Cassie
     given-names: Ben
     orcid: "https://orcid.org/0009-0004-1899-7627"
-version: "3"
-date-released: "2026-07-10"
+version: "4"
+date-released: "2026-08-25"
 license: MIT
 repository-code: "https://github.com/velvetmonkey/kuramoto-lean"
 url: "https://github.com/velvetmonkey/kuramoto-lean"
@@ -17,7 +17,7 @@ identifiers:
     description: "Concept DOI (all versions; always resolves to the latest release)"
   - type: doi
     value: 10.5281/zenodo.21300158
-    description: "This release (v3)"
+    description: "Prior release (v3)"
 keywords:
   - Lean 4
   - Mathlib

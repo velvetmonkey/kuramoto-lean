@@ -50,7 +50,7 @@ Paired with [crdt-lean](https://github.com/velvetmonkey/crdt-lean)'s Strong Even
 **kuramoto-lean: A Lean 4 Library for Finite-N Kuramoto Synchronisation Dynamics**  
 Ben Cassie (2026). Zenodo.  
 Latest version (all versions): https://doi.org/10.5281/zenodo.20468618  
-This release (v3): https://doi.org/10.5281/zenodo.21300158
+This release (v5): https://doi.org/10.5281/zenodo.22096792
 
 ## Changelog
 

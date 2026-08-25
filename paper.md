@@ -5,7 +5,7 @@ Independent Researcher
 bencassie@outlook.com  
 ORCID: 0009-0004-1899-7627
 
-Published on Zenodo. DOI: 10.5281/zenodo.20468619.
+Published on Zenodo. Concept DOI (all versions): 10.5281/zenodo.20468618.
 
 ## Abstract
 
@@ -534,8 +534,8 @@ Finally, the development suggests possible Mathlib contributions: reusable lemma
 ## References and Links
 
 - `kuramoto-lean` repository: <https://github.com/velvetmonkey/kuramoto-lean>
-- Paper DOI: <https://doi.org/10.5281/zenodo.20468619>
-- Paper record: <https://zenodo.org/records/20468619>
+- Paper DOI (all versions): <https://doi.org/10.5281/zenodo.20468618>
+- Paper record (resolves to latest version): <https://zenodo.org/doi/10.5281/zenodo.20468618>
 - Companion `flywheel-universe` repository: <https://github.com/velvetmonkey/flywheel-universe>
 - Companion Max-Cut paper record: <https://doi.org/10.5281/zenodo.20469680>
 - Live Hebbian Kuramoto demo: <https://velvetmonkey.github.io/flywheel-universe/>
